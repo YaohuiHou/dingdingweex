@@ -73,6 +73,10 @@
     font-size: 16px;
     color: #17181A;
   }
+  .selected{
+    font-size: 16px;
+    color: #1571E5;
+  }
   .img{
     margin-right: 10px;
   }

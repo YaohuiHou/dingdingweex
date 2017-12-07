@@ -3,12 +3,16 @@ import dingtalk from 'dingtalk-javascript-sdk';
 const meta = weex.requireModule('meta')
 const stream = weex.requireModule('stream');
 const modal = weex.requireModule('modal');
+const storage = weex.requireModule('storage')
+const websocket = weex.requireModule('webSocket')
+
 const gateway = "http://192.168.2.11:8003/";
 const appid = "bs_q44d44gaooqpawi1p9q0";
 const secretkey = "84e0bbaf769da44510a92505e5cea5c0";
 
 // 打开的链接地址
-const openUrl = "http://192.168.250.187:8088/dist/"
+const websocketUrl = '://192.168.250.124:8088'
+const openUrl = 'http' + websocketUrl + "/dist/"
 
 // 配置 viewport 的宽度为 400px
 meta && meta.setViewport({
@@ -51,7 +55,6 @@ export function jsapifun(callback) {
 
 // 获取用户id
 export function getUserId(code, callback) {
-
   var url = getNeedUrl("dd/getuserinfo");
   var sign = getNeedUrlsign(url);
 
@@ -74,18 +77,99 @@ export function getVisitList(data, callback) {
   }, callback)
 }
 
+// 店铺经销商搜索
+export function getDealerList(data, callback) {
+  var url = getNeedUrl("dealer/getlist");
+  var sign = getNeedUrlsign(url);
+
+  stream.fetch({
+    method: 'POST',
+    body: data,
+    url: url + '&Signature=' + sign
+  }, callback)
+}
+
+// 获取拜访详情
+export function getVisitDealer(data, callback) {
+  var url = getNeedUrl("visit/getdetail");
+  var sign = getNeedUrlsign(url);
+
+  stream.fetch({
+    method: 'POST',
+    body: data,
+    url: url + '&Signature=' + sign
+  }, callback)
+}
+
+
 // 打开新连接
-export function openLink(url) {
+export function openLink(url, onSuccess, onFail) {
   dingtalk.ready(function() {
     const dd = dingtalk.apis;
     dd.biz.util.openLink({
       url: openUrl + url + ".js?dd_wx_tpl=" + openUrl + url + ".js", //要打开链接的地址
-      onSuccess: function(result) {},
-      onFail: function(err) {}
+      onSuccess,
+      onFail
+    })
+  })
+}
+// 替换当前页面
+export function replaceLink(url, onSuccess, onFail) {
+  dingtalk.ready(function() {
+    const dd = dingtalk.apis;
+    dd.biz.navigation.replace({
+      url: openUrl + url + ".js?dd_wx_tpl=" + openUrl + url + ".js", //替换的链接
+      onSuccess,
+      onFail
+    })
+  })
+}
+// 关闭当前页面 
+export function closeLink(onSuccess, onFail) {
+  dingtalk.ready(function() {
+    const dd = dingtalk.apis;
+    dd.biz.navigation.close({
+      onSuccess,
+      onFail
+    })
+  })
+}
+// 返回上一级页面  
+export function goBackLink(onSuccess, onFail) {
+  dingtalk.ready(function() {
+    const dd = dingtalk.apis;
+    dd.biz.navigation.goBack({
+      onSuccess,
+      onFail
     })
   })
 }
 
+
+// 全局缓存
+export function setItem(name, value, callback) {
+  storage.setItem(name, value, callback)
+}
+export function getItem(name, callback) {
+  storage.getItem(name, callback)
+}
+export function removeItem(name, callback) {
+  storage.removeItem(name, callback)
+}
+
+// websocket通信
+export function webSocketMessage() {
+  websocket.WebSocket('ws' + websocketUrl, '');
+  websocket.onerror = function(e) {
+    return e.data
+  }
+}
+export function webSocketsend(some) {
+  websocket.send(some);
+}
+export function webSocketclose(e) {
+  websocket.close();
+}
 
 // 弹窗
 export function toast(msg, time) {
@@ -95,7 +179,6 @@ export function toast(msg, time) {
     duration: time
   });
 }
-
 
 
 

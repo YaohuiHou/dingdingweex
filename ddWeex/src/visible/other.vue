@@ -1,6 +1,6 @@
 <template>
   <div class="other">
-    <div class="item" @click="gotoLink('typeView')">
+    <div class="item" @click="gotoLink('visible/type')">
       <div class="left">
         <text class="left-text">拜访类别</text>
         <text class="must">*</text>
@@ -10,7 +10,7 @@
         <div class="icon"></div>
       </div>
     </div>
-    <div class="item" @click="gotoLink('timeView')">
+    <div class="item" @click="gotoLink('visible/time')">
       <div class="left">
         <text class="left-text">拜访时长</text>
         <text class="must">*</text>
@@ -20,7 +20,7 @@
         <div class="icon"></div>
       </div>
     </div>
-    <div class="item" @click="gotoLink('levelView')">
+    <div class="item" @click="gotoLink('visible/level')">
       <div class="left">
         <text class="left-text">被访人级别</text>
         <text class="must">*</text>
@@ -34,6 +34,8 @@
 </template>
 
 <script>
+  import {toast,openLink} from '../lib/util.js';
+  import dingtalk from 'dingtalk-javascript-sdk';
   export default {
     data(){
       return{
@@ -42,11 +44,8 @@
     },
     methods:{
       gotoLink(view){
-        // 到定位页
-        this.$router.push({
-          path:"/"+view,
-          name:view
-        })
+        // 到指定页面
+        openLink(view)
       }
     }
   }

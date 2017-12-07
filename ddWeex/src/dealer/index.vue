@@ -4,10 +4,10 @@
       <!-- 拜访地 -->
       <headerView></headerView>
       <!-- 拜访人 -->
-      <listView v-if="nothing"></listView>
-
+      <listView v-if="!nothing"></listView>
+      
       <!-- 空 -->
-      <div class="nothing">
+      <div class="nothing" v-if="nothing">
         <image src="https://s.kcimg.cn/dingtalk/image/nothing.png" style="width:200px;height:150px;"></image>
         <text class="no-text">还没有人拜访~</text>
       </div>
@@ -15,9 +15,11 @@
   </div>
 </template>
 <script>
+  var globalEvent = weex.requireModule('globalEvent');
   import headerView from './head.vue';
   import listView from './list.vue';
   import dingtalk from 'dingtalk-javascript-sdk';
+  import {openLink,getItem,toast,webSocketMessage} from '../lib/util.js';
   export default {
     name: 'dealer',
     components:{
@@ -26,10 +28,17 @@
     },
     data(){
       return {
-        nothing:false
+        nothing:true,
+        CheckInRecord:{}
       }
     },
     created(){
+      // 获取签到信息
+      getItem('CheckInRecord',event=>{
+        this.CheckInRecord = event.data
+      })
+
+      // this.some = webSocketMessage()
       
     },
     mounted: function(){
@@ -54,7 +63,6 @@
 <style scoped>
   .dealer{
     background-color: #f3f4f5;
-    height: 100%;
   }
   .nothing{
     padding-top: 48px;

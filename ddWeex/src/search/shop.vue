@@ -3,9 +3,10 @@
     <list>
       <!-- 店铺 -->
       <cell class="item" v-for="(item,index) in lists"  v-bind:key="index">
-        <div class="box">
-          <image class="img" :src="selected[0]" style="width:18px;height:18px;"></image>
-          <text class="text">{{item}}</text>
+        <div class="box" @click="selectedFun(index)">
+          <image class="img" :src="selected[ item.selected === true ? 1 : 0 ]" style="width:18px;height:18px;"></image>
+          <text :class="[item.selected === true ? 'slected' : 'text']">{{item.StoreName}}</text>
+          <!-- :class="item.selected === true ? 'slected' : 'text'" -->
         </div>
       </cell>
     </list>
@@ -13,21 +14,17 @@
 </template>
 <script>
   import dingtalk from 'dingtalk-javascript-sdk';
+  import {toast,getItem,setItem,openLink,replaceLink,goBackLink,webSocketsend} from '../lib/util.js';
   export default {
     data(){
       return {
         lists:[
-          '重庆市巴南区九公里渝南汽车超市C1-1-15',
-          '重庆市巴南区九公里渝南汽车超市C1-1-15销售服务有限公司有限公司有限公司有限公司有限公司',
-          '重庆市巴南区九公里渝南汽车超市C1-1-15阿斯顿发',
-          '天水隆顺达东风汽车销售服务有限公司',
-          '重庆市巴南区九公里渝南汽车超市C1-1-15',
-          '重庆市巴南区九公里渝南汽车超市C1-1-15'
         ],
         selected:[
           'https://s.kcimg.cn/dingtalk/image/circle.png',
           'https://s.kcimg.cn/dingtalk/image/yes.png'
-        ]
+        ],
+        nextIndex: -1
       }
     },
     mounted: function(){
@@ -39,6 +36,39 @@
         });
         // });
       })
+    },
+    created(){
+      // 获取选中的经销商
+      getItem('DealerDetail',event=>{
+        let shop = JSON.parse(event.data)
+        this.lists = shop.DealerSubList
+        toast(shop.DealerSubList[0].StoreName)
+      })
+    },
+    methods:{
+      // 选中店铺
+      selectedFun(index){
+        /*
+        *  判断是否有上一个，有就干掉
+        *  保存index，为下次准备
+        */
+        if(this.nextIndex !== -1){
+          this.$set(this.lists[this.nextIndex],'selected',false)
+        }
+        this.nextIndex = index
+
+        if(!this.lists[index].selected){
+          this.$set(this.lists[index],'selected',true)
+        }
+        // 储存选择
+        webSocketsend(this.lists[index])
+        setItem('StoreInfo',this.lists[index],event=>{
+          // 返回上一页
+          goBackLink(res=>{
+            replaceLink('dealer/index')
+          })
+        })
+      }
     }
   }
 </script>
@@ -65,6 +95,13 @@
     width: 344px;
     font-size: 16px;
     color: #17181A;
+    line-height: 24px;
+    word-wrap:break-word;
+  }
+  .slected{
+    width: 344px;
+    font-size: 16px;
+    color: #1571E5;
     line-height: 24px;
     word-wrap:break-word;
   }

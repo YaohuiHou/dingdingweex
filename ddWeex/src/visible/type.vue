@@ -35,7 +35,7 @@
         const dd = dingtalk.apis;
         // title
         dd.biz.navigation.setTitle({
-            title: '定位店铺'
+            title: '拜访类别'
         });
         // });
       })
@@ -64,6 +64,10 @@
   .text{
     font-size: 16px;
     color: #17181A;
+  }
+  .selected{
+    font-size: 16px;
+    color: #1571E5;
   }
   .other{
     justify-content: space-between;

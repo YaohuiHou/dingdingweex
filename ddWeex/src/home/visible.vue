@@ -5,13 +5,11 @@
       <text class="month">/{{ monthNum }}月</text>
       <div class="link"></div>
     </div>
-    <div class="sign" @click="gotolink">
+    <div class="sign" @click="gotoLink">
       <text class="time">{{timer}}</text>
       <div class="zone">
         <text class="place">{{list.Place}}</text>
         <text class="detail-place">{{list.DetailPlace}}</text>
-        <!-- <text class="place">阿萨德噶</text>
-        <text class="detail-place">大师傅噶手动阀发大水</text> -->
       </div>
       <div class="type">
         <!-- 三种状态 未匹配：no-mate ； 未拜访：need-mate ； 已完成：mate -->
@@ -22,7 +20,7 @@
   </div>
 </template>
 <script>
-  import {toast} from '../lib/util.js';
+  import {toast,setItem,openLink} from '../lib/util.js';
   export default {
     props:['list','index','newTimer','month'],
     data(){
@@ -44,10 +42,17 @@
       this.timer = hours +":"+ minutes
     },
     methods:{
-      gotolink(){
-        this.$router.push({
-          path: "/visible",
-          name: "visible"
+      // 页面跳转
+      gotoLink(go){
+        // 存储签到记录
+        setItem('CheckInRecord',this.list,event=>{
+          // 成功之后跳转页面
+          if(this.list.VisitStatus === 1){  // 未拜访
+            openLink('visible/index')
+          }else{
+            // openLink('dealer/index')
+          }
+          
         })
       }
     }
@@ -109,12 +114,18 @@
     line-height: 26px;
     font-size: 18px;
     color: #17181A;
+    width: 230px;
+    height: 26px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
   .detail-place{
     line-height: 20px;
     font-size: 12px;
     color: #5C6066;
     width: 230px;
+    height: 20px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

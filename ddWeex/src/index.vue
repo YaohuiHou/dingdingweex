@@ -33,7 +33,7 @@
   var modal = weex.requireModule('modal');
 
   import dingtalk from 'dingtalk-javascript-sdk';
-  import {jsapifun,toast,getUserId,getVisitList} from './lib/util.js';
+  import {jsapifun,toast,getUserId,getVisitList,setItem} from './lib/util.js';
   import headerView from './home/head.vue';
   import visibleView from './home/visible.vue';
   
@@ -87,6 +87,7 @@
           }
       },
       created (){
+
         var me = this;
         // JsApi()
         // 获取cofig
@@ -108,7 +109,8 @@
               "biz.navigation",
               "biz.map.search",
               "biz.util.openLink",
-              "biz.util.open"
+              "biz.util.open",
+              "biz.map.locate"
             ] // 必填，需要使用的jsapi列表，注意：不要带dd。
           });
           // 获取requestAuthCode
@@ -136,7 +138,9 @@
                 getUserId( result.code, res=>{
                   var o = JSON.parse(res.data)  
                   me.DingTalkUserIds = o.Body.DingTalkUserId
-
+                  toast(o.Body.DingTalkUserId)
+                  // 存储钉钉uid
+                  setItem('DingTalkUserId',me.DingTalkUserIds)
                   // 获取数据
                   me.getlist(me.list.Head.RspTime)
                 })
@@ -188,12 +192,12 @@
                  }) 
             ,res=>{
               var obj = JSON.parse(res.data) 
+              
               // this.$set(this,'visibleList',obj.Body)
               this.visibleList = obj.Body
               this.MonthCheckInCount = obj.Body.MonthCheckInCount
               this.DayCheckInCount = obj.Body.DayCheckInCount
               this.CheckInRecordList = obj.Body.CheckInRecordList
-              toast(this.MonthCheckInCount)
               if(!this.CheckInRecordList.length){
                 this.nothing = true
               }else{

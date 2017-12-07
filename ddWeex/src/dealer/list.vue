@@ -12,6 +12,22 @@
     </div>
   </div>
 </template>
+<script>
+  import {openLink} from '../lib/util.js';
+  export default {
+    data(){
+      return {
+      }
+    },
+    methods:{
+      gotoLink(type){
+        // 跳到搜索页
+        openLink(type)
+      }
+    }
+  }
+</script>
+
 <style scoped>
   .man-list{
     padding-top: 8px;

@@ -1,7 +1,7 @@
 <template>
   <div class="list">
     <!-- 经销商 -->
-    <div class="dealer item" @click="gotoLink('SearchDealer')">
+    <div class="dealer item" @click="gotoLink('search/dealer')">
       <text class="text-left">经销商</text>
       <div class="right">
         <text class="text-right">请选择经销商</text>
@@ -9,7 +9,7 @@
       </div>
     </div>
     <!-- 店铺 -->
-    <div class="shop item" @click="gotoLink('SearchShop')">
+    <div class="shop item" @click="gotoLink('search/shop')">
       <text class="text-left">店铺</text>
       <div class="right">
         <text class="text-right">请选择店铺</text>
@@ -19,6 +19,7 @@
   </div>
 </template>
 <script>
+  import {openLink} from '../lib/util.js';
   export default {
     data(){
       return {
@@ -27,10 +28,7 @@
     methods:{
       gotoLink(type){
         // 跳到搜索页
-        this.$router.push({
-          path: "/"+type,
-          name: type
-        })
+        openLink(type)
       }
     }
   }

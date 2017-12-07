@@ -1,6 +1,6 @@
 <template>
   <div class="header">
-    <div class="item">
+    <div class="item" @click="gotoLink('dealer/index')">
       <div class="left">
         <text class="left-text">拜访客户</text>
         <text class="must">*</text>
@@ -10,7 +10,7 @@
         <div class="icon"></div>
       </div>
     </div>
-    <div class="item" @click="location">
+    <div class="item" @click="gotoLink('visible/location')">
       <div class="left">
         <text class="left-text">定位地址</text>
       </div>
@@ -46,6 +46,7 @@
   </div>
 </template>
 <script>
+  import {toast,openLink} from '../lib/util.js';
   export default {
     data(){
       return {
@@ -58,10 +59,14 @@
     methods:{
       location(){
         // 到定位页
-        this.$router.push({
-          path:"/locationView",
-          name:"locationView"
-        })
+        // this.$router.push({
+        //   path:"/locationView",
+        //   name:"locationView"
+        // })
+      },
+      // 页面跳转
+      gotoLink(go){
+        openLink(go)
       }
     }
   }
