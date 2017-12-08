@@ -1,12 +1,12 @@
 <template>
   <div class="header">
-    <div class="item" @click="gotoLink('dealer/index')">
+    <div class="item" @click="gotoLink('search/dealer')">
       <div class="left">
         <text class="left-text">拜访客户</text>
         <text class="must">*</text>
       </div>
       <div class="right">
-        <text class="right-text">商铺地址乱七八糟</text>
+        <text :class="[ DealerName != '请选择拜访客户' ? 'selected' : 'right-text' ]">{{DealerName}}</text>
         <div class="icon"></div>
       </div>
     </div>
@@ -15,7 +15,7 @@
         <text class="left-text">定位地址</text>
       </div>
       <div class="right">
-        <text class="zone-text">地址地址地址地址地址地址</text>
+        <text class="zone-text">{{ CheckInRecord.DetailPlace }}</text>
         <text class="no-text">未匹配</text>
       </div>
     </div>
@@ -33,12 +33,12 @@
         <text class="left-text">经销商级别</text>
       </div>
       <div class="right">
-        <div class="select-box">
-          <image class="img" :src="selected[0]" style="width:18px;height:18px;"></image>
+        <div class="select-box" @click="changeBoxFun(0)">
+          <image class="img" :src="selected[ changeBox ? 0 : 1 ]" style="width:18px;height:18px;"></image>
           <text class="text">一级</text>
         </div>
-        <div class="select-box">
-          <image class="img" :src="selected[1]" style="width:18px;height:18px;"></image>
+        <div class="select-box" @click="changeBoxFun(1)">
+          <image class="img" :src="selected[ changeBox ? 1 : 0 ]" style="width:18px;height:18px;"></image>
           <text class="text">二级</text>
         </div>
       </div>
@@ -48,25 +48,33 @@
 <script>
   import {toast,openLink} from '../lib/util.js';
   export default {
+    props:['CheckInRecord','DealerName'],
     data(){
       return {
         selected:[
           'https://s.kcimg.cn/dingtalk/image/circle.png',
           'https://s.kcimg.cn/dingtalk/image/select.png'
-        ]
+        ],
+        changeBox:false,
+        nextIndex:-1
       }
     },
+    created(){
+      
+    },
     methods:{
-      location(){
-        // 到定位页
-        // this.$router.push({
-        //   path:"/locationView",
-        //   name:"locationView"
-        // })
+      changeBoxFun(n){
+        if(this.nextIndex === n) return
+        this.nextIndex = n
+        this.changeBox = ! this.changeBox
       },
       // 页面跳转
       gotoLink(go){
-        openLink(go)
+        if(this.SomeOpen) return;
+        this.SomeOpen = true
+        openLink(go,res=>{
+          this.SomeOpen = false
+        })
       }
     }
   }
@@ -89,6 +97,12 @@
   .left,.right{
     flex-direction: row;
     align-items: center;
+  }
+  .left{
+    width: 100px;
+  }
+  .right{
+    width: 284px;
   }
   .left-text{
     color: #17181A;
@@ -113,17 +127,36 @@
   }
   .right-text{
     font-size: 16px;
+    color: #A1A9B3;
+    width: 252px;
+    height: 48px;
+    line-height: 48px;
+    overflow: hidden;
+    text-align: right;
+  }
+  .selected{
+    font-size: 16px;
     color: #17181A;
+    width: 252px;
+    height: 48px;
+    line-height: 48px;
+    overflow: hidden;
+    text-align: right;
   }
   .zone-text{
     color: #A1A9B3;
     font-size: 16px;
+    width: 200px;
+    overflow: hidden;
+    height: 48px;
+    line-height: 48px;
   }
   .no-text{
     color: #F7411C;
     font-size: 16px;
     margin-left: 12px;
     margin-right: 16px;
+    width: 48px;
   }
   .reason{
     align-items: flex-start;

@@ -4,7 +4,7 @@
     <div class="dealer item" @click="gotoLink('search/dealer')">
       <text class="text-left">经销商</text>
       <div class="right">
-        <text class="text-right">请选择经销商</text>
+        <text :class="[ DealerId === '请选择经销商' ? 'text-right' : 'selected' ]">{{DealerId}}</text>
         <div class="icon"></div>
       </div>
     </div>
@@ -12,7 +12,7 @@
     <div class="shop item" @click="gotoLink('search/shop')">
       <text class="text-left">店铺</text>
       <div class="right">
-        <text class="text-right">请选择店铺</text>
+        <text :class="[ StoreName === '请选择店铺' ? 'text-right' : 'selected' ]">{{StoreName}}</text>
         <div class="icon"></div>
       </div>
     </div>
@@ -21,14 +21,22 @@
 <script>
   import {openLink} from '../lib/util.js';
   export default {
+    props:['DealerId','StoreName'],
     data(){
       return {
       }
     },
+    created(){
+      
+    },
     methods:{
       gotoLink(type){
         // 跳到搜索页
-        openLink(type)
+        if(this.SomeOpen) return;
+        this.SomeOpen = true
+        openLink(type,res=>{
+          this.SomeOpen = false
+        })
       }
     }
   }
@@ -57,6 +65,7 @@
   .right{
     flex-direction: row;
     align-items: center;
+    width: 310px;
   }
   .text-left,.text-right{
     font-size: 16px;
@@ -65,13 +74,23 @@
   }
   .text-left{
     color: #17181A;
+    width: 80px;
   }
   .text-right{
     color: #A1A9B3;
-    max-width: 200px;
+    width: 278px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+  }
+  .selected{
+    color: #17181A;
+    width: 278px;
+    overflow: hidden;
+    height: 24px;
+    font-size: 16px;
+    line-height: 24px;
+    text-align: right;
   }
   .icon{
     margin-right: 16px;

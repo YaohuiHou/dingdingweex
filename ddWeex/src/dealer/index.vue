@@ -2,10 +2,12 @@
   <div class="dealer">
     <scroller>
       <!-- 拜访地 -->
-      <headerView></headerView>
+      <headerView
+        :DealerId="DealerId"
+        :StoreName="StoreName"
+      ></headerView>
       <!-- 拜访人 -->
       <listView v-if="!nothing"></listView>
-      
       <!-- 空 -->
       <div class="nothing" v-if="nothing">
         <image src="https://s.kcimg.cn/dingtalk/image/nothing.png" style="width:200px;height:150px;"></image>
@@ -19,7 +21,7 @@
   import headerView from './head.vue';
   import listView from './list.vue';
   import dingtalk from 'dingtalk-javascript-sdk';
-  import {openLink,getItem,toast,webSocketMessage} from '../lib/util.js';
+  import {openLink,getItem,toast} from '../lib/util.js';
   export default {
     name: 'dealer',
     components:{
@@ -29,7 +31,9 @@
     data(){
       return {
         nothing:true,
-        CheckInRecord:{}
+        CheckInRecord:{},
+        DealerId:'请选择经销商',
+        StoreName:'请选择店铺'
       }
     },
     created(){
@@ -37,9 +41,23 @@
       getItem('CheckInRecord',event=>{
         this.CheckInRecord = event.data
       })
-
-      // this.some = webSocketMessage()
-      
+      // 实时获取缓存数据
+      setInterval(()=>{
+        // 获取经销商
+        getItem('DealerDetail',event=>{
+          let data = JSON.parse(event.data)
+          if (data !== undefined || data !== '') {
+            this.DealerId = data.DealerName
+          }
+        })
+        // 获取店铺
+        getItem('StoreInfo',event=>{
+          let data = JSON.parse(event.data)
+          if (data !== undefined || data !== '') {
+            this.StoreName = data.StoreName
+          }
+        })
+      }, 200);
     },
     mounted: function(){
       dingtalk.ready(function(){
@@ -48,15 +66,18 @@
         dd.biz.navigation.setTitle({
             title: '经销商拜访记录'
         });
-
-        // 左侧导航
-        // dd.biz.navigation.setLeft({
-        //   control: true,
-        //   onSuccess:res=>{
-        //     this.$router.go(-1);
-        //   }
-        // });
       })
+
+      // 通信监听
+      // webSocketMessage(
+        // res=>{
+        //   toast('success')
+        //   this.success = res.data
+        // },err=>{
+        //   toast('error')
+        //   this.error = err.data
+        // }
+      // )
     }
   }
 </script>

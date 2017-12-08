@@ -75,6 +75,8 @@
       },
       // 选择经销商
       changed(index){
+        if(this.SomeOpen) return;
+        this.SomeOpen = true
         /*
         *  判断是否有上一个，有就干掉
         *  保存index，为下次准备
@@ -92,6 +94,7 @@
           // 打开当前店铺页
           openLink('search/shop',res=>{
             // 关闭当前页面
+            this.SomeOpen = false
             closeLink()
           })
         })

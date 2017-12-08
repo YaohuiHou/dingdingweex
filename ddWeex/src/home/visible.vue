@@ -20,7 +20,7 @@
   </div>
 </template>
 <script>
-  import {toast,setItem,openLink} from '../lib/util.js';
+  import {toast,setItem,openLink,removeItem} from '../lib/util.js';
   export default {
     props:['list','index','newTimer','month'],
     data(){
@@ -44,11 +44,19 @@
     methods:{
       // 页面跳转
       gotoLink(go){
+        if(this.SomeOpen) return;
+        this.SomeOpen = true
+
+        // 清除经销商选项
+        removeItem('DealerDetail')
+        removeItem('StoreInfo')
         // 存储签到记录
         setItem('CheckInRecord',this.list,event=>{
           // 成功之后跳转页面
           if(this.list.VisitStatus === 1){  // 未拜访
-            openLink('visible/index')
+            openLink('visible/index',res=>{
+              this.SomeOpen = false
+            })
           }else{
             // openLink('dealer/index')
           }

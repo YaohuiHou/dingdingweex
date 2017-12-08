@@ -14,7 +14,7 @@
 </template>
 <script>
   import dingtalk from 'dingtalk-javascript-sdk';
-  import {toast,getItem,setItem,openLink,replaceLink,goBackLink,webSocketsend} from '../lib/util.js';
+  import {toast,getItem,setItem,openLink,replaceLink,goBackLink} from '../lib/util.js';
   export default {
     data(){
       return {
@@ -42,7 +42,6 @@
       getItem('DealerDetail',event=>{
         let shop = JSON.parse(event.data)
         this.lists = shop.DealerSubList
-        toast(shop.DealerSubList[0].StoreName)
       })
     },
     methods:{
@@ -61,12 +60,9 @@
           this.$set(this.lists[index],'selected',true)
         }
         // 储存选择
-        webSocketsend(this.lists[index])
         setItem('StoreInfo',this.lists[index],event=>{
           // 返回上一页
-          goBackLink(res=>{
-            replaceLink('dealer/index')
-          })
+          goBackLink()
         })
       }
     }

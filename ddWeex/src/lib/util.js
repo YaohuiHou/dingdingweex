@@ -1,18 +1,17 @@
 import dingtalk from 'dingtalk-javascript-sdk';
+import { setInterval } from 'timers';
 
 const meta = weex.requireModule('meta')
 const stream = weex.requireModule('stream');
 const modal = weex.requireModule('modal');
 const storage = weex.requireModule('storage')
-const websocket = weex.requireModule('webSocket')
 
 const gateway = "http://192.168.2.11:8003/";
 const appid = "bs_q44d44gaooqpawi1p9q0";
 const secretkey = "84e0bbaf769da44510a92505e5cea5c0";
 
 // 打开的链接地址
-const websocketUrl = '://192.168.250.124:8088'
-const openUrl = 'http' + websocketUrl + "/dist/"
+const openUrl = "http://192.168.250.97:8088/dist/"
 
 // 配置 viewport 的宽度为 400px
 meta && meta.setViewport({
@@ -145,7 +144,6 @@ export function goBackLink(onSuccess, onFail) {
   })
 }
 
-
 // 全局缓存
 export function setItem(name, value, callback) {
   storage.setItem(name, value, callback)
@@ -155,20 +153,6 @@ export function getItem(name, callback) {
 }
 export function removeItem(name, callback) {
   storage.removeItem(name, callback)
-}
-
-// websocket通信
-export function webSocketMessage() {
-  websocket.WebSocket('ws' + websocketUrl, '');
-  websocket.onerror = function(e) {
-    return e.data
-  }
-}
-export function webSocketsend(some) {
-  websocket.send(some);
-}
-export function webSocketclose(e) {
-  websocket.close();
 }
 
 // 弹窗

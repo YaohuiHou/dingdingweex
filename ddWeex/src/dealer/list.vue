@@ -22,7 +22,11 @@
     methods:{
       gotoLink(type){
         // 跳到搜索页
-        openLink(type)
+        if(this.SomeOpen) return;
+        this.SomeOpen = true
+        openLink(type,res=>{
+          this.SomeOpen = false
+        })
       }
     }
   }

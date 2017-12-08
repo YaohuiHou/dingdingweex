@@ -1,33 +1,38 @@
 <template>
   <div class="type-view">
     <scroller class="view">
-      <div class="box" v-for="item in lists">
-        <text class="text">{{item}}</text>
+      <div class="box" v-for="(item,index) in lists" @click="changeFun(index)">
+        <text :class="[item.selectedClass ? 'selected' : 'text' ]">{{item.name}}</text>
       </div>
       <div class="box other">
-        <text class="text">其他</text>
+        <text :class="[otherClass ? 'selected' : 'text' ]">其他</text>
         <div class="right">
-          <input type="text" class="input" placeholder="请输入拜访类别"/>
-          <text class="ok">确认</text>
+          <input type="text" class="input" placeholder="请输入拜访类别" :value="otherType" @input="inputFun"/>
+          <text :class="[otherClass ? 'selectedok' : 'ok' ]" @click="letGo">确认</text>
         </div>
       </div>
     </scroller>
   </div>
 </template>
 <script>
-  import {toast} from '../lib/util.js';
+  import {toast,setItem,getItem,goBackLink} from '../lib/util.js';
   import dingtalk from 'dingtalk-javascript-sdk';
   export default {
     data(){
       return {
+        // 1：初次拜访，2：新人初次拜访，4：未签单回访，4：个人团单，5：个人新签，6：参加活动，7：培训，100：其他
         lists:[
-          '签单回访',
-          '新人初次拜访',
-          '团单续签',
-          '个人续签',
-          '培训',
-          '参加活动'
-        ]
+          {name:'初次拜访',value:1,selectedClass:false},
+          {name:'新人初次拜访',value:2,selectedClass:false},
+          {name:'未签单回访',value:3,selectedClass:false},
+          {name:'个人团单',value:4,selectedClass:false},
+          {name:'个人新签',value:5,selectedClass:false},
+          {name:'参加活动',value:6,selectedClass:false},
+          {name:'培训',value:7,selectedClass:false}
+        ],
+        nextIndex: -1,
+        otherType: "",
+        otherClass: false
       }
     },
     mounted: function(){
@@ -35,13 +40,72 @@
         const dd = dingtalk.apis;
         // title
         dd.biz.navigation.setTitle({
-            title: '拜访类别'
+            title: '拜访类型'
         });
         // });
       })
     },
+    created(){
+      getItem('visibleType',event=>{
+        let data = JSON.parse(event.data)
+        if( data.value === 100 ){     // 其他
+          this.otherType = data.name
+          this.otherClass = true
+        }else{
+          this.lists[data.value-1].selectedClass = true
+        }
+      })
+    },
     methods:{
-      
+      // 选中
+      changeFun(index){
+        if(this.SomeOpen) return;
+        this.SomeOpen = true
+        /*
+        *  判断是否有上一个，有就干掉
+        *  保存index，为下次准备
+        */
+        if(this.nextIndex !== -1){
+          this.$set(this.lists[this.nextIndex],'selectedClass',false)
+        }
+        this.nextIndex = index
+        this.$set(this.lists[index],'selectedClass',true)
+
+        // 储存选择
+        setItem('visibleType',this.lists[index],event=>{
+          // 返回上一页
+          goBackLink()
+          this.SomeOpen = false
+        })
+      },
+      // 输入内容
+      inputFun(event){
+        this.otherType = event.value
+
+        if( event.value.length > 0 ){
+          this.otherClass = true
+          this.$set(this.lists[this.nextIndex],'selectedClass',false)
+          this.nextIndex = -1
+        }else{
+          this.otherClass = false
+        }
+      },
+      // 输入信息存储
+      letGo(){
+        if(this.SomeOpen) return;
+        this.SomeOpen = true
+        // 储存选择
+        let type = {
+          name: this.otherType,
+          value: 100,
+          selectedClass: true
+        }
+        setItem('visibleType',this.lists[index],event=>{
+          // 返回上一页
+          goBackLink()
+          this.SomeOpen = false
+        })
+      }
     }
   }
 </script>
@@ -64,10 +128,6 @@
   .text{
     font-size: 16px;
     color: #17181A;
-  }
-  .selected{
-    font-size: 16px;
-    color: #1571E5;
   }
   .other{
     justify-content: space-between;
@@ -92,5 +152,20 @@
     border-left-style: solid;
     border-left-color: rgba(23,24,26,0.08);
     text-align: center;
+  }
+  .selected{
+    font-size: 16px;
+    color: #1571E5;
+  }
+  .selectedok{
+    width: 65px;
+    height: 48px;
+    line-height: 48px;
+    font-size: 16px;
+    border-left-width: 1px;
+    border-left-style: solid;
+    border-left-color: rgba(23,24,26,0.08);
+    text-align: center;
+    color: #1571E5;
   }
 </style>

@@ -10,7 +10,10 @@
         </div>
       </div>
       <!-- 拜访头 -->
-      <headerView></headerView>
+      <headerView
+        :CheckInRecord="CheckInRecord"
+        :DealerName="DealerName"
+      ></headerView>
       <!-- 类型 -->
       <otherView></otherView>
       <!-- 下一步 -->
@@ -38,7 +41,8 @@
         longitude: 0, // 经度
         list:{},
         // 是否需要定位
-        golocation:false
+        golocation:false,
+        DealerName:'请选择拜访客户'
       }
     },
     created(){
@@ -64,8 +68,10 @@
             "biz.map.locate"
           ] // 必填，需要使用的jsapi列表，注意：不要带dd。
         });
-
       })
+
+      // 实时获取缓存数据
+      this.realTime()
     },
     mounted: function(){
       dingtalk.ready(function(){
@@ -78,6 +84,26 @@
       })
     },
     methods:{
+      // 实时刷新数据
+      realTime(){
+        setInterval(()=>{
+        // 获取经销商
+        getItem('DealerDetail',event=>{
+          let data = JSON.parse(event.data)
+          if (data !== undefined) {
+            this.DealerId = data.DealerName
+          }
+        })
+        // 获取店铺
+        getItem('StoreInfo',event=>{
+          let data = JSON.parse(event.data)
+          if (data !== undefined) {
+            this.DealerName = data.StoreName
+          }
+        })
+      }, 300);
+      },
+      // 调取地图
       tomap(){
         var me = this
         dingtalk.ready(function(){
@@ -94,6 +120,7 @@
           });
         })
       },
+
       gotolink(type){
         // 到定位页
         

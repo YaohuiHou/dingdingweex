@@ -55,7 +55,11 @@
       },
       // 页面跳转
       gotoLink(go){
-        openLink(go)
+        if(this.SomeOpen) return;
+        this.SomeOpen = true
+        openLink(go,res=>{
+          this.SomeOpen = false
+        })
       }
     }
   }

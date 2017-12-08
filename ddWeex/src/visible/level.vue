@@ -25,12 +25,12 @@
     data(){
       return {
         lists:[
-          '签单回访',
-          '新人初次拜访',
-          '团单续签',
-          '个人续签',
-          '培训',
-          '参加活动'
+          '老板',
+          '总经理',
+          '店长',
+          '销售经理',
+          '财务',
+          '信息员'
         ],
         selected:[
           'https://s.kcimg.cn/dingtalk/image/circle.png',
