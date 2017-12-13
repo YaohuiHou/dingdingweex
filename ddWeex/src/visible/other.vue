@@ -6,7 +6,7 @@
         <text class="must">*</text>
       </div>
       <div class="right">
-        <text class="right-text">商铺地址乱七八糟</text>
+        <text :class="[ visibleType != '请选择拜访类别' ? 'selected' : 'right-text' ]">{{ visibleType }}</text>
         <div class="icon"></div>
       </div>
     </div>
@@ -16,7 +16,7 @@
         <text class="must">*</text>
       </div>
       <div class="right">
-        <text class="right-text">商铺地址乱七八糟</text>
+        <text :class="[ visibleTimer != '请选择拜访时长' ? 'selected' : 'right-text' ]">{{ visibleTimer }}</text>
         <div class="icon"></div>
       </div>
     </div>
@@ -26,7 +26,7 @@
         <text class="must">*</text>
       </div>
       <div class="right">
-        <text class="right-text">商铺地址乱七八糟</text>
+        <text :class="[ visibleLevel != '请选择被访人级别' ? 'selected' : 'right-text' ]">{{ visibleLevel }}</text>
         <div class="icon"></div>
       </div>
     </div>
@@ -34,18 +34,25 @@
 </template>
 
 <script>
-  import {toast,openLink} from '../lib/util.js';
+  import {toast,openLink,getItem} from '../lib/util.js';
   import dingtalk from 'dingtalk-javascript-sdk';
   export default {
+    props:['visibleType','visibleTimer','visibleLevel','IsCooperation'],
     data(){
       return{
 
       }
     },
+    created(){
+    },
     methods:{
       gotoLink(view){
         // 到指定页面
-        openLink(view)
+        if(view === 'visible/type' && this.IsCooperation ){
+          openLink('visible/type-ok')
+        }else{
+          openLink(view)
+        }
       }
     }
   }
@@ -71,6 +78,12 @@
     flex-direction: row;
     align-items: center;
   }
+  .left{
+    width: 100px;
+  }
+  .right{
+    width: 284px;
+  }
   .left-text{
     color: #17181A;
     font-size: 16px;
@@ -94,6 +107,19 @@
   }
   .right-text{
     font-size: 16px;
+    color: #A1A9B3;
+    width: 252px;
+    height: 48px;
+    line-height: 48px;
+    text-align: right;
+  }
+  .selected{
+    font-size: 16px;
     color: #17181A;
+    width: 252px;
+    height: 48px;
+    line-height: 48px;
+    overflow: hidden;
+    text-align: right;
   }
 </style>

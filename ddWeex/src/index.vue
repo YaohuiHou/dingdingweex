@@ -138,7 +138,7 @@
                 getUserId( result.code, res=>{
                   var o = JSON.parse(res.data)  
                   me.DingTalkUserIds = o.Body.DingTalkUserId
-                  toast(o.Body.DingTalkUserId)
+                  
                   // 存储钉钉uid
                   setItem('DingTalkUserId',me.DingTalkUserIds)
                   // 获取数据
@@ -192,7 +192,7 @@
                  }) 
             ,res=>{
               var obj = JSON.parse(res.data) 
-              
+
               // this.$set(this,'visibleList',obj.Body)
               this.visibleList = obj.Body
               this.MonthCheckInCount = obj.Body.MonthCheckInCount

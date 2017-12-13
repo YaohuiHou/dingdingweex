@@ -13,18 +13,26 @@
       <headerView
         :CheckInRecord="CheckInRecord"
         :DealerName="DealerName"
+        :matchText="matchText"
+        :visibleData="visibleData"
+        @inputValue="inputValue"
       ></headerView>
       <!-- 类型 -->
-      <otherView></otherView>
+      <otherView
+        :IsCooperation="IsCooperation"
+        :visibleType="visibleType"
+        :visibleTimer="visibleTimer"
+        :visibleLevel="visibleLevel"
+      ></otherView>
       <!-- 下一步 -->
-      <div class="next" @click="gotolink('registerView')">
+      <div class="next" @click="nextBtn('register/index')">
         <text class="text">下一步</text>
       </div>
     </scroller>
   </div>
 </template>
 <script>
-  import {toast,getItem,jsapifun} from '../lib/util.js';
+  import {toast,getItem,setItem,jsapifun,openLink,getCheckin} from '../lib/util.js';
   import dingtalk from 'dingtalk-javascript-sdk';
   import headerView from './head.vue';
   import otherView from './other.vue';
@@ -42,15 +50,38 @@
         list:{},
         // 是否需要定位
         golocation:false,
-        DealerName:'请选择拜访客户'
+        DealerName:'请选择拜访客户',
+        visibleType: '请选择拜访类别',
+        visibleTimer: '请选择拜访时长',
+        visibleLevel: '请选择被访人级别',
+        // 存储所有拜访信息
+        visibleData: {},
+        // 门店经纬度
+        Longitude:0,
+        Latitude:0,
+        // 是否匹配
+        matchText: '未匹配',
+        // 是否合作
+        IsCooperation: null,
+        timer:null
       }
     },
     created(){
       // 获取签到信息
       getItem('CheckInRecord',event=>{
         this.$set(this,'CheckInRecord',JSON.parse(event.data))
-        // 获取签到详情
-        
+        // 客户拜访存储数据
+        this.visibleData = {
+          //签到记录ID
+          CheckinRecordId: this.CheckInRecord.Id,
+          // 系统用户id
+          UserId: this.CheckInRecord.UserId,
+          // 用户全名
+          UserName: this.CheckInRecord.UserName,
+          // 访问等级
+          DealerLevel: 1
+        }
+        setItem('visibleData',JSON.stringify(this.visibleData))
       })
       // 授权
       const dd = dingtalk.apis;
@@ -72,6 +103,7 @@
 
       // 实时获取缓存数据
       this.realTime()
+
     },
     mounted: function(){
       dingtalk.ready(function(){
@@ -83,25 +115,96 @@
         // });
       })
     },
+    watch:{
+      DealerName(){
+        getCheckin(
+          JSON.stringify({
+            "Body": {
+              "CheckIn_Latitude": this.CheckInRecord.Latitude,
+              "CheckIn_Longitude": this.CheckInRecord.Longitude,
+              "Store_Latitude": this.Longitude,
+              "Store_Longitude": this.Latitude
+            }
+          }) 
+          ,res=>{
+            toast('ok')
+            var obj = JSON.parse(res.data) 
+            this.golocation = !obj.Body
+            this.visibleData.IsEffective = 0
+            if(obj.Body){
+              this.matchText = '已匹配'
+              this.visibleData.IsEffective = 1
+            }
+          }
+        )
+      }
+    },
     methods:{
       // 实时刷新数据
       realTime(){
-        setInterval(()=>{
-        // 获取经销商
-        getItem('DealerDetail',event=>{
-          let data = JSON.parse(event.data)
-          if (data !== undefined) {
-            this.DealerId = data.DealerName
-          }
-        })
-        // 获取店铺
-        getItem('StoreInfo',event=>{
-          let data = JSON.parse(event.data)
-          if (data !== undefined) {
-            this.DealerName = data.StoreName
-          }
-        })
-      }, 300);
+        this.timer && clearInterval(this.timer)
+        this.timer = setInterval(()=>{
+          // 经销商信息
+          getItem('DealerDetail',event=>{
+            let data = JSON.parse(event.data)
+            if (data !== undefined) {
+              // 经销商编号
+              this.visibleData.DealerId = data.DealerId
+              setItem('visibleData',JSON.stringify(this.visibleData))
+            }
+          })
+          // 获取店铺
+          getItem('StoreInfo',event=>{
+            let data = JSON.parse(event.data)
+            if (data !== undefined) {
+              this.DealerName = data.StoreName
+              this.Longitude = data.Latitude
+              this.Latitude = data.Latitude
+              // 是否合作
+              this.IsCooperation = data.IsCooperation
+              
+              // 选择的门店ID集合
+              this.visibleData.StoreIdList = []
+              this.visibleData.StoreIdList.push(data.StoreId)
+              setItem('visibleData',JSON.stringify(this.visibleData))
+            }
+          })
+          // 拜访类型
+          getItem('visibleType',event=>{
+            let data = JSON.parse(event.data)
+            if (data !== undefined) {
+              this.visibleType = data.name
+
+              // 传值
+              this.visibleData.VisitTypeText = data.name
+              this.visibleData.VisitType = data.value
+              setItem('visibleData',JSON.stringify(this.visibleData))
+            }
+          })
+          // 拜访时长
+          getItem('visibleTimer',event=>{
+            let data = JSON.parse(event.data)
+            if (data !== undefined) {
+              this.visibleTimer = data.name
+
+              this.visibleData.VisitHoursText = data.name
+              setItem('visibleData',JSON.stringify(this.visibleData))
+            }
+          })
+          // 访问级别
+          getItem('visibleLevel',event=>{
+            let data = JSON.parse(event.data)
+            if (data !== undefined) {
+              this.visibleLevel = ''
+              data.forEach(element => {
+                if(element.selectedClass){
+                  this.visibleLevel += element.name + ' '
+                }
+              });
+            }
+          })
+
+        }, 300);
       },
       // 调取地图
       tomap(){
@@ -120,13 +223,42 @@
           });
         })
       },
-
-      gotolink(type){
-        // 到定位页
-        
+      // 下一步 跳转判断
+      nextBtn(type){
+        if(this.DealerName == '请选择拜访客户'){
+          toast('请选择拜访客户',5)
+          return;
+        }else if(this.visibleType == '请选择拜访类别'){
+          toast('请选择拜访类别',5)
+          return;
+        }else if(this.visibleTimer == '请选择拜访时长'){
+          toast('请选择拜访时长',5)
+          return;
+        }else if(this.visibleLevel == '请选择被访人级别'){
+          toast('请选择被访人级别',5)
+          return;
+        }else if(this.visibleData.InvalidReason == ''){
+          toast('请输入未匹配原因',5)
+          return;
+        }
+        // 跳转
+        this.timer && clearInterval(this.timer)
+        this.gotolink(type,1)
       },
-      getDetail(){
-
+      // 无效地址原因输入
+      inputValue(val){
+        this.visibleData.InvalidReason = val
+      },
+      gotolink(type,n){
+        if(!n){
+          this.realTime()
+        }
+        // 页面跳转
+        if(this.SomeOpen) return;
+        this.SomeOpen = true
+        openLink(type,res=>{
+          this.SomeOpen = false
+        })
       }
     }
   }

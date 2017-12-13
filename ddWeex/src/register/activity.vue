@@ -28,25 +28,17 @@
   export default {
     data(){
       return {
-        // lists:[
-        //   '老板',
-        //   '总经理',
-        //   '店长',
-        //   '销售经理',
-        //   '财务',
-        //   '信息员'
-        // ],
         selected:[
           'https://s.kcimg.cn/dingtalk/image/circle.png',
           'https://s.kcimg.cn/dingtalk/image/yes.png'
         ],
         lists:[
-          {name:'老板',value:1,selectedClass:false},
-          {name:'总经理',value:2,selectedClass:false},
-          {name:'店长',value:3,selectedClass:false},
-          {name:'销售经理',value:4,selectedClass:false},
-          {name:'财务',value:5,selectedClass:false},
-          {name:'信息员',value:6,selectedClass:false},
+          {name:'新店开业',value:1,selectedClass:false},
+          {name:'交车仪式',value:2,selectedClass:false},
+          {name:'专访',value:3,selectedClass:false},
+          {name:'新车到店',value:4,selectedClass:false},
+          {name:'年会',value:5,selectedClass:false},
+          {name:'新车发布',value:6,selectedClass:false},
           {name:'',value:100,selectedClass:false}
         ],
         nextIndex: -1,
@@ -59,13 +51,13 @@
         const dd = dingtalk.apis;
         // title
         dd.biz.navigation.setTitle({
-            title: '选择被访人级别'
+            title: '活动类型'
         });
         // });
       })
     },
     created(){
-      getItem('visibleLevel',event=>{
+      getItem('visibleActivity',event=>{
         let data = JSON.parse(event.data)
         if(data !== undefined){
           if( data[6].value === 100 ){     // 其他
@@ -102,14 +94,8 @@
       letGo(){
         if(this.SomeOpen) return;
         this.SomeOpen = true
-        // // 储存选择
-        // let type = {
-        //   name: this.otherType,
-        //   value: 100,
-        //   selectedClass: true
-        // }
-        // this.lists.push(type)
-        setItem('visibleLevel',this.lists,event=>{
+        
+        setItem('visibleActivity',this.lists,event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false
@@ -119,7 +105,7 @@
         if(this.SomeOpen) return;
         this.SomeOpen = true
         // 储存选择
-        setItem('visibleLevel',this.lists,event=>{
+        setItem('visibleActivity',this.lists,event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false

@@ -5,7 +5,7 @@
       <text class="month">/{{ monthNum }}月</text>
       <div class="link"></div>
     </div>
-    <div class="sign" @click="gotoLink">
+    <div class="sign" @click="gotoLink(list)">
       <text class="time">{{timer}}</text>
       <div class="zone">
         <text class="place">{{list.Place}}</text>
@@ -34,22 +34,31 @@
     },
     created(){
       // 时间换算
-      let now = new Date(this.list.CheckinTime)
+      var now = new Date(this.list.CheckinTime)
       this.monthNum = ((now.getMonth()+1)<10?"0":"")+(now.getMonth()+1)
       this.dayNum = (now.getDate()<10?"0":"")+now.getDate();
-      let hours = (now.getHours()<10?"0":"") + now.getHours();                              // 小时
-      let minutes = (now.getMinutes()<10?"0":"") + now.getMinutes();              // 分钟
+      var hours = (now.getHours()<10?"0":"") + now.getHours();                              // 小时
+      var minutes = (now.getMinutes()<10?"0":"") + now.getMinutes();              // 分钟
       this.timer = hours +":"+ minutes
+      // this.timer = this.list.CheckinTime
     },
     methods:{
       // 页面跳转
-      gotoLink(go){
+      gotoLink(obj){
         if(this.SomeOpen) return;
         this.SomeOpen = true
 
-        // 清除经销商选项
+        // 清除缓存数据
         removeItem('DealerDetail')
         removeItem('StoreInfo')
+        removeItem('visibleType')
+        removeItem('visibleTimer')
+        removeItem('visibleLevel')
+        removeItem('intentionType')
+        removeItem('visibleActivity')
+        removeItem('TrainingReason')
+        removeItem('TrainingContent')
+        toast(obj.CheckInRecordId)
         // 存储签到记录
         setItem('CheckInRecord',this.list,event=>{
           // 成功之后跳转页面
@@ -58,7 +67,7 @@
               this.SomeOpen = false
             })
           }else{
-            // openLink('dealer/index')
+            openLink('detail/index')
           }
           
         })

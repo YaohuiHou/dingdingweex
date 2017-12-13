@@ -1,25 +1,26 @@
 <template>
   <div class="type-view">
     <scroller class="view">
-      <div class="box" v-for="item in lists">
-        <text class="text">{{item}}</text>
+      <div class="box" v-for="(item,index) in lists" @click="changeFun(index)">
+        <text :class="[item.selectedClass ? 'selected' : 'text' ]">{{item.name}}</text>
       </div>
     </scroller>
   </div>
 </template>
 <script>
-  import {toast} from '../lib/util.js';
+  import {toast,setItem,getItem,goBackLink} from '../lib/util.js';
   import dingtalk from 'dingtalk-javascript-sdk';
   export default {
     data(){
       return {
         lists:[
-          '30分钟以下',
-          '30-60分钟',
-          '1-2小时',
-          '2-3小时',
-          '3小时以上'
-        ]
+          {name:'30分钟以下',value:0,selectedClass:false},
+          {name:'30-60分钟',value:1,selectedClass:false},
+          {name:'1-2小时',value:2,selectedClass:false},
+          {name:'2-3小时',value:3,selectedClass:false},
+          {name:'3小时以上',value:4,selectedClass:false}
+        ],
+        nextIndex: -1,
       }
     },
     mounted: function(){
@@ -32,8 +33,34 @@
         // });
       })
     },
+    created(){
+      getItem('visibleTimer',event=>{
+        let data = JSON.parse(event.data)
+        this.lists[data.value].selectedClass = true
+      })
+    },
     methods:{
-      
+      // 选中
+      changeFun(index){
+        if(this.SomeOpen) return;
+        this.SomeOpen = true
+        /*
+        *  判断是否有上一个，有就干掉
+        *  保存index，为下次准备
+        */
+        if(this.nextIndex !== -1){
+          this.$set(this.lists[this.nextIndex],'selectedClass',false)
+        }
+        this.nextIndex = index
+        this.$set(this.lists[index],'selectedClass',true)
+
+        // 储存选择
+        setItem('visibleTimer',this.lists[index],event=>{
+          // 返回上一页
+          goBackLink()
+          this.SomeOpen = false
+        })
+      },
     }
   }
 </script>

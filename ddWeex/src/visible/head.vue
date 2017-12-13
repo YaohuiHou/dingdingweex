@@ -10,24 +10,25 @@
         <div class="icon"></div>
       </div>
     </div>
-    <div class="item" @click="gotoLink('visible/location')">
+    <div class="item">
       <div class="left">
         <text class="left-text">定位地址</text>
       </div>
       <div class="right">
         <text class="zone-text">{{ CheckInRecord.DetailPlace }}</text>
-        <text class="no-text">未匹配</text>
+        <text :class="[ matchText == '未匹配' ? 'no-text' : 'ok-text' ]">{{matchText}}</text>
       </div>
     </div>
-    <div class="item reason">
+    <div class="item reason" v-if="matchText == '未匹配'">
       <div class="left">
         <text class="left-text">未匹配原因</text>
         <text class="must">*</text>
       </div>
       <div class="input-box">
-        <textarea type="text" placeholder="请输入未匹配原因，待审核" class="input" rows="4"/>
+        <textarea type="text" placeholder="请输入未匹配原因，待审核" class="input" rows="4" @input="inputFun"/>
       </div>
     </div>
+
     <div class="item change">
       <div class="left">
         <text class="left-text">经销商级别</text>
@@ -46,9 +47,9 @@
   </div>
 </template>
 <script>
-  import {toast,openLink} from '../lib/util.js';
+  import {toast,openLink,setItem,getItem} from '../lib/util.js';
   export default {
-    props:['CheckInRecord','DealerName'],
+    props:['CheckInRecord','DealerName','matchText','visibleData'],
     data(){
       return {
         selected:[
@@ -60,13 +61,15 @@
       }
     },
     created(){
-      
     },
     methods:{
       changeBoxFun(n){
         if(this.nextIndex === n) return
         this.nextIndex = n
-        this.changeBox = ! this.changeBox
+        this.changeBox = !this.changeBox
+        // this.$emit('changeValue',n++)
+        this.visibleData.DealerLevel = n++
+        setItem('visibleData',JSON.stringify(this.visibleData))
       },
       // 页面跳转
       gotoLink(go){
@@ -75,6 +78,9 @@
         openLink(go,res=>{
           this.SomeOpen = false
         })
+      },
+      inputFun(event){
+        this.$emit('inputValue',event.value)
       }
     }
   }
@@ -153,6 +159,13 @@
   }
   .no-text{
     color: #F7411C;
+    font-size: 16px;
+    margin-left: 12px;
+    margin-right: 16px;
+    width: 48px;
+  }
+  .ok-text{
+    color:#80C220;
     font-size: 16px;
     margin-left: 12px;
     margin-right: 16px;

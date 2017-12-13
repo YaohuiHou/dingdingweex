@@ -47,6 +47,8 @@
     methods:{
       // 选中店铺
       selectedFun(index){
+        if(this.SomeOpen) return;
+          this.SomeOpen = true
         /*
         *  判断是否有上一个，有就干掉
         *  保存index，为下次准备
@@ -59,10 +61,17 @@
         if(!this.lists[index].selected){
           this.$set(this.lists[index],'selected',true)
         }
+        // // 存储到提交json
+        // getItem('visibleData',event=>{
+        //   let data = JSON.parse(event.data)
+        //   data.StoreIdList = this.lists[index].StoreId
+        //   setItem('visibleData',JSON.stringify(data))
+        // })
         // 储存选择
         setItem('StoreInfo',this.lists[index],event=>{
           // 返回上一页
           goBackLink()
+          this.SomeOpen = false
         })
       }
     }

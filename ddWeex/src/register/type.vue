@@ -1,65 +1,52 @@
 <template>
   <div class="type-view">
     <scroller class="view">
-      <div class="box" v-for="(item,index) in lists" @click="changeFun(index)">
-        <text :class="[item.selectedClass ? 'selected' : 'text' ]">{{item.name}}</text>
-      </div>
-      <div class="box other">
-        <text :class="[otherClass ? 'selected' : 'text' ]">其他</text>
-        <div class="right">
-          <input type="text" class="input" placeholder="请输入拜访类别" :value="otherType" @input="inputFun"/>
-          <text :class="[otherClass ? 'selectedok' : 'ok' ]" @click="letGo">确认</text>
+      <div :class="[index != 4 ? 'box' : 'box other' ]" v-for="(item,index) in lists">
+        <div class="left">
+          <text @click="changeFun(index)" :class="[item.selectedClass ? 'selected' : 'text' ]">{{item.name}}</text>
+          <text v-if="index == 4" :class="[item.selectedClass ? 'selectedok' : 'ok' ]" @click="letGo">确认</text>
+        </div>
+        <div class="right" v-if="index == 4">
+          <textarea type="text" class="input" placeholder="请输入拒绝原因" rows="4" :value="item.some" @input="inputFun"/>
         </div>
       </div>
     </scroller>
   </div>
 </template>
+
 <script>
   import {toast,setItem,getItem,goBackLink} from '../lib/util.js';
   import dingtalk from 'dingtalk-javascript-sdk';
   export default {
     data(){
       return {
-        // 1：初次拜访，2：新人初次拜访，4：未签单回访，4：个人团单，5：个人新签，6：参加活动，7：培训，8：签单回访，9：团单续签，10：个人续签，100：其他
         lists:[
-          {name:'初次拜访',value:1,selectedClass:false,type:1},
-          {name:'新人初次拜访',value:2,selectedClass:false,type:0},
-          {name:'未签单回访',value:3,selectedClass:false,type:1},
-          {name:'个人团单',value:4,selectedClass:false,type:1},
-          {name:'个人新签',value:5,selectedClass:false,type:1},
-          {name:'参加活动',value:6,selectedClass:false,type:0},
-          {name:'培训',value:7,selectedClass:false,type:0}
+          {name:'已签约，未打款',value:1,selectedClass:false},
+          {name:'非常有意向，已经进入签约价格谈判阶段',value:2,selectedClass:false},
+          {name:'有意向，处于沟通阶段',value:3,selectedClass:false},
+          {name:'没有拒绝，但是又没有反对合作，处于了解阶段',value:4,selectedClass:false},
+          {name:'无意向，拒绝合作',value:5,selectedClass:false,some:''},
         ],
         nextIndex: -1,
         otherType: "",
         otherClass: false
       }
     },
-    mounted: function(){
-      dingtalk.ready(function(){
-        const dd = dingtalk.apis;
-        // title
-        dd.biz.navigation.setTitle({
-            title: '拜访类型'
-        });
-        // });
-      })
-    },
     created(){
-      getItem('visibleType',event=>{
+      getItem('intentionType',event=>{
         let data = JSON.parse(event.data)
-        if( data.value === 100 ){     // 其他
-          this.otherType = data.name
-          this.otherClass = true
-        }else{
+        if( data !== undefined ){     // 其他
           this.lists[data.value-1].selectedClass = true
+          if(data.value === 5){
+            this.lists[data.value-1].some = data.some
+          }
         }
       })
     },
     methods:{
       // 选中
       changeFun(index){
-        if(this.SomeOpen) return;
+        if(this.SomeOpen || index == 4) return;
         this.SomeOpen = true
         /*
         *  判断是否有上一个，有就干掉
@@ -72,7 +59,7 @@
         this.$set(this.lists[index],'selectedClass',true)
 
         // 储存选择
-        setItem('visibleType',this.lists[index],event=>{
+        setItem('intentionType',this.lists[index],event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false
@@ -80,27 +67,20 @@
       },
       // 输入内容
       inputFun(event){
-        this.otherType = event.value
-
+        this.lists[4].some = event.value
         if( event.value.length > 0 ){
-          this.otherClass = true
-          this.$set(this.lists[this.nextIndex],'selectedClass',false)
-          this.nextIndex = -1
+          (this.nextIndex !== -1) && this.$set(this.lists[this.nextIndex],'selectedClass',false)
+          this.$set(this.lists[4],'selectedClass',true)
+          this.nextIndex = 4
         }else{
-          this.otherClass = false
+          this.$set(this.lists[4],'selectedClass',false)
         }
       },
       // 输入信息存储
       letGo(){
         if(this.SomeOpen) return;
         this.SomeOpen = true
-        // 储存选择
-        let type = {
-          name: this.otherType,
-          value: 100,
-          selectedClass: true
-        }
-        setItem('visibleType',type,event=>{
+        setItem('intentionType',this.lists[4],event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false
@@ -128,13 +108,28 @@
   .text{
     font-size: 16px;
     color: #17181A;
+    height: 48px;
+    line-height: 48px;
   }
   .other{
     justify-content: space-between;
   }
-  .right{
+  .left{
     flex-direction: row;
-    width: 302px;
+    justify-content: space-between;
+  }
+  .right{
+    width: 368px;
+    height: 96px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    margin-bottom: 17px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #D8D8D8;
+    align-items: flex-start;
   }
   .input{
     width: 237px;
@@ -148,9 +143,6 @@
     line-height: 48px;
     font-size: 16px;
     color: #A1A9B3;
-    border-left-width: 1px;
-    border-left-style: solid;
-    border-left-color: rgba(23,24,26,0.08);
     text-align: center;
   }
   .selected{

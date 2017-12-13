@@ -22,13 +22,12 @@
       return {
         // 1：初次拜访，2：新人初次拜访，4：未签单回访，4：个人团单，5：个人新签，6：参加活动，7：培训，8：签单回访，9：团单续签，10：个人续签，100：其他
         lists:[
-          {name:'初次拜访',value:1,selectedClass:false,type:1},
           {name:'新人初次拜访',value:2,selectedClass:false,type:0},
-          {name:'未签单回访',value:3,selectedClass:false,type:1},
-          {name:'个人团单',value:4,selectedClass:false,type:1},
-          {name:'个人新签',value:5,selectedClass:false,type:1},
           {name:'参加活动',value:6,selectedClass:false,type:0},
-          {name:'培训',value:7,selectedClass:false,type:0}
+          {name:'培训',value:7,selectedClass:false,type:0},
+          {name:'签单回访',value:8,selectedClass:false,type:2},
+          {name:'团单续签',value:9,selectedClass:false,type:2},
+          {name:'个人续签',value:10,selectedClass:false,type:2},
         ],
         nextIndex: -1,
         otherType: "",

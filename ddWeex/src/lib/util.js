@@ -11,7 +11,7 @@ const appid = "bs_q44d44gaooqpawi1p9q0";
 const secretkey = "84e0bbaf769da44510a92505e5cea5c0";
 
 // 打开的链接地址
-const openUrl = "http://192.168.250.97:8088/dist/"
+const openUrl = "http://192.168.250.168:8088/dist/"
 
 // 配置 viewport 的宽度为 400px
 meta && meta.setViewport({
@@ -90,6 +90,42 @@ export function getDealerList(data, callback) {
 
 // 获取拜访详情
 export function getVisitDealer(data, callback) {
+  var url = getNeedUrl("visit/getdetail");
+  var sign = getNeedUrlsign(url);
+
+  stream.fetch({
+    method: 'POST',
+    body: data,
+    url: url + '&Signature=' + sign
+  }, callback)
+}
+
+// 签到比较
+export function getCheckin(data, callback) {
+  var url = getNeedUrl("checkin/cplocalrange");
+  var sign = getNeedUrlsign(url);
+
+  stream.fetch({
+    method: 'POST',
+    body: data,
+    url: url + '&Signature=' + sign
+  }, callback)
+}
+
+// 添加 | 更新拜访记录
+export function visibleAddFun(data, callback) {
+  var url = getNeedUrl("visit/add");
+  var sign = getNeedUrlsign(url);
+
+  stream.fetch({
+    method: 'POST',
+    body: data,
+    url: url + '&Signature=' + sign
+  }, callback)
+}
+
+// 获取拜访详情
+export function getVisibleDetail(data, callback) {
   var url = getNeedUrl("visit/getdetail");
   var sign = getNeedUrlsign(url);
 

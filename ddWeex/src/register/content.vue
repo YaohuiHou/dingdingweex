@@ -7,7 +7,7 @@
       <div class="box other">
         <text :class="[otherClass ? 'selected' : 'text' ]">其他</text>
         <div class="right">
-          <input type="text" class="input" placeholder="请输入拜访类别" :value="otherType" @input="inputFun"/>
+          <input type="text" class="input" placeholder="请输入培训内容" :value="otherType" @input="inputFun"/>
           <text :class="[otherClass ? 'selectedok' : 'ok' ]" @click="letGo">确认</text>
         </div>
       </div>
@@ -20,15 +20,9 @@
   export default {
     data(){
       return {
-        // 1：初次拜访，2：新人初次拜访，4：未签单回访，4：个人团单，5：个人新签，6：参加活动，7：培训，8：签单回访，9：团单续签，10：个人续签，100：其他
+        // 1：初次拜访，2：新人初次拜访，4：未签单回访，4：个人团单，5：个人新签，6：参加活动，7：培训，100：其他
         lists:[
-          {name:'初次拜访',value:1,selectedClass:false,type:1},
-          {name:'新人初次拜访',value:2,selectedClass:false,type:0},
-          {name:'未签单回访',value:3,selectedClass:false,type:1},
-          {name:'个人团单',value:4,selectedClass:false,type:1},
-          {name:'个人新签',value:5,selectedClass:false,type:1},
-          {name:'参加活动',value:6,selectedClass:false,type:0},
-          {name:'培训',value:7,selectedClass:false,type:0}
+          {name:'产品培训',value:1,selectedClass:false},
         ],
         nextIndex: -1,
         otherType: "",
@@ -40,13 +34,13 @@
         const dd = dingtalk.apis;
         // title
         dd.biz.navigation.setTitle({
-            title: '拜访类型'
+            title: '培训内容'
         });
         // });
       })
     },
     created(){
-      getItem('visibleType',event=>{
+      getItem('TrainingContent',event=>{
         let data = JSON.parse(event.data)
         if( data.value === 100 ){     // 其他
           this.otherType = data.name
@@ -72,7 +66,7 @@
         this.$set(this.lists[index],'selectedClass',true)
 
         // 储存选择
-        setItem('visibleType',this.lists[index],event=>{
+        setItem('TrainingContent',this.lists[index],event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false
@@ -100,7 +94,7 @@
           value: 100,
           selectedClass: true
         }
-        setItem('visibleType',type,event=>{
+        setItem('TrainingContent',type,event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false
