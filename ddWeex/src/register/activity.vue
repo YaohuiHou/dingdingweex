@@ -95,7 +95,7 @@
         if(this.SomeOpen) return;
         this.SomeOpen = true
         
-        setItem('visibleActivity',this.lists,event=>{
+        setItem('visibleActivity',JSON.stringify(this.lists),event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false
@@ -105,7 +105,7 @@
         if(this.SomeOpen) return;
         this.SomeOpen = true
         // 储存选择
-        setItem('visibleActivity',this.lists,event=>{
+        setItem('visibleActivity',JSON.stringify(this.lists),event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false

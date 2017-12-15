@@ -90,12 +90,13 @@
           this.$set(this.lists[index],'className',true)
         }
         // 储存选择
-        setItem('DealerDetail',this.lists[index],event=>{
+        setItem('DealerDetail',JSON.stringify(this.lists[index]),event=>{
+          // 关闭当前页面
+            closeLink()
           // 打开当前店铺页
           openLink('search/shop',res=>{
-            // 关闭当前页面
+            
             this.SomeOpen = false
-            closeLink()
           })
         })
 

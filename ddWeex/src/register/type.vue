@@ -59,7 +59,7 @@
         this.$set(this.lists[index],'selectedClass',true)
 
         // 储存选择
-        setItem('intentionType',this.lists[index],event=>{
+        setItem('intentionType',JSON.stringify(this.lists[index]),event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false
@@ -80,7 +80,7 @@
       letGo(){
         if(this.SomeOpen) return;
         this.SomeOpen = true
-        setItem('intentionType',this.lists[4],event=>{
+        setItem('intentionType',JSON.stringify(this.lists[4]),event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false

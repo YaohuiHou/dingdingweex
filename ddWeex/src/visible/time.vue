@@ -55,7 +55,7 @@
         this.$set(this.lists[index],'selectedClass',true)
 
         // 储存选择
-        setItem('visibleTimer',this.lists[index],event=>{
+        setItem('visibleTimer',JSON.stringify(this.lists[index]),event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false

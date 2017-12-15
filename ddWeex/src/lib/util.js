@@ -11,7 +11,7 @@ const appid = "bs_q44d44gaooqpawi1p9q0";
 const secretkey = "84e0bbaf769da44510a92505e5cea5c0";
 
 // 打开的链接地址
-const openUrl = "http://192.168.250.168:8088/dist/"
+const openUrl = "http://192.168.250.168:8083/dist/"
 
 // 配置 viewport 的宽度为 400px
 meta && meta.setViewport({
@@ -40,14 +40,14 @@ function getNeedUrlsign(url) {
 }
 
 // 获取钉钉jsapi配置包数据
-export function jsapifun(callback) {
+export function jsapifun(bundleUrl, callback) {
 
   var url = getNeedUrl("dd/getpackage");
   var sign = getNeedUrlsign(url);
 
   stream.fetch({
     method: 'POST',
-    body: JSON.stringify({ "Body": { "Url": url } }),
+    body: JSON.stringify({ "Body": { "Url": bundleUrl } }),
     url: url + '&Signature=' + sign
   }, callback)
 }
@@ -79,6 +79,18 @@ export function getVisitList(data, callback) {
 // 店铺经销商搜索
 export function getDealerList(data, callback) {
   var url = getNeedUrl("dealer/getlist");
+  var sign = getNeedUrlsign(url);
+
+  stream.fetch({
+    method: 'POST',
+    body: data,
+    url: url + '&Signature=' + sign
+  }, callback)
+}
+
+// 重新定位
+export function setUdlocation(data, callback) {
+  var url = getNeedUrl("dealer/udlocation");
   var sign = getNeedUrlsign(url);
 
   stream.fetch({
@@ -183,17 +195,44 @@ export function goBackLink(onSuccess, onFail) {
 // 全局缓存
 export function setItem(name, value, callback) {
   storage.setItem(name, value, callback)
+    // dingtalk.ready(function() {
+    //   const dd = dingtalk.apis;
+    //   dd.util.domainStorage.setItem({
+    //     name: name, // 存储信息的key值
+    //     value: value, // 存储信息的Value值
+    //     onSuccess,
+    //     onFail
+    //   });
+    // })
 }
 export function getItem(name, callback) {
   storage.getItem(name, callback)
+    // dingtalk.ready(function() {
+    //   const dd = dingtalk.apis;
+    //   dd.util.domainStorage.getItem({
+    //     name: name, // 存储信息的key值
+    //     onSuccess,
+    //     onFail
+    //   });
+    // })
 }
 export function removeItem(name, callback) {
   storage.removeItem(name, callback)
+    // dingtalk.ready(function() {
+    //   const dd = dingtalk.apis;
+    //   dd.util.domainStorage.removeItem({
+    //     name: name, // 存储信息的key值
+    //     onSuccess,
+    //     onFail
+    //   });
+    // })
 }
 
 // 弹窗
 export function toast(msg, time) {
-  !time && (time = 20)
+  if (!time || time > 5) {
+    time = 3
+  }
   modal.toast({
     message: msg,
     duration: time

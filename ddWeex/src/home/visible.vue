@@ -20,7 +20,7 @@
   </div>
 </template>
 <script>
-  import {toast,setItem,openLink,removeItem} from '../lib/util.js';
+  import {toast,setItem,openLink,removeItem,getItem} from '../lib/util.js';
   export default {
     props:['list','index','newTimer','month'],
     data(){
@@ -34,13 +34,13 @@
     },
     created(){
       // 时间换算
-      var now = new Date(this.list.CheckinTime)
+      var now = new Date(this.list.CheckinTimestamp*1000)
       this.monthNum = ((now.getMonth()+1)<10?"0":"")+(now.getMonth()+1)
       this.dayNum = (now.getDate()<10?"0":"")+now.getDate();
       var hours = (now.getHours()<10?"0":"") + now.getHours();                              // 小时
       var minutes = (now.getMinutes()<10?"0":"") + now.getMinutes();              // 分钟
       this.timer = hours +":"+ minutes
-      // this.timer = this.list.CheckinTime
+      // toast(this.list.CheckinTime)
     },
     methods:{
       // 页面跳转
@@ -58,17 +58,19 @@
         removeItem('visibleActivity')
         removeItem('TrainingReason')
         removeItem('TrainingContent')
-        toast(obj.CheckInRecordId)
         // 存储签到记录
-        setItem('CheckInRecord',this.list,event=>{
+        setItem('CheckInRecord',JSON.stringify(this.list),event=>{
           // 成功之后跳转页面
           if(this.list.VisitStatus === 1){  // 未拜访
             openLink('visible/index',res=>{
               this.SomeOpen = false
             })
           }else{
-            openLink('detail/index')
+            openLink('detail/index',res=>{
+              this.SomeOpen = false
+            })
           }
+          // toast(getItem('CheckInRecord'))
           
         })
       }

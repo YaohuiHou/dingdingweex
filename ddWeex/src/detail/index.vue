@@ -1,8 +1,8 @@
 <template>
   <div class="view">
-    <scroller>
+    <scroller class="view-box">
       <div class="detail" v-for="item in lists" v-if="item.value.length && (!item.visibleType || (item.visibleType && item.visibleType == 'ok') )">
-        <div class="box" v-if="item.need === true" v-for="element in item.value">
+        <div class="box" v-if="item.need === '1'" v-for="element in item.value">
           <text class="left-text">{{element.title}}</text>
           <div class="right">
             <text class="right-text" >{{element.value}}</text>
@@ -18,48 +18,55 @@
         </div>
       </div>
     </scroller>
+    <div class="submit" @click="submit" v-if="isGoTo">
+        <text class="submit-text">修改</text>
+      </div>
   </div>
 </template>
 <script>
-  import {toast,setItem,getItem,goBackLink,getVisibleDetail} from '../lib/util.js';
+  import {toast,setItem,getItem,openLink,getVisibleDetail,closeLink} from '../lib/util.js';
   import dingtalk from 'dingtalk-javascript-sdk';
   export default {
     data(){
       return {
         lists:[
-          {title:'经销商',type:'DealerName',value:'',store:false},
+          /*
+          * store 店铺 ； need 数组，需要循环 ； name 展示子集 ； isok 是否 ； visibleType 不同拜访展示 ； stage 拜访类型
+          *  need: 1 联系人集合 ； 2 培训相关 ； 3 活动相关
+          */ 
+          {title:'经销商',type:'DealerName',value:'',store:false,activity:'err'},
           {title:'拜访店铺',type:'DealerSubJsonList',value:[],store:true,name:'StoreName'},
-          {title:'经销商级别',type:'DealerLevel',value:'',store:false},
-          {title:'拜访时间',type:'CreateDate',value:'',store:false},
-          {title:'定位地址',type:'DetailPlace',value:'',store:false},
-          {title:'拜访类别',type:'VisitTypeText',value:'',store:false},
-          {title:'被访人级别',type:'ContactInfoList',value:[],need:true},
-          {title:'培训相关信息',type:'TrainingInfoModel',value:[],need:true},
-          {title:'活动相关信息',type:'ActivityInfoList',value:[],need:true},
-          {title:'客户意向类型',type:'IntentionType',value:'',store:false},
-          {title:'拒绝原因',type:'IntentionType',value:'',store:false},
-          {title:'是否知道卡车之家',type:'CommentContent',value:'',store:false,isok:true},
-          {title:'是否合作其他家',type:'OtherCooperation',value:'',store:false,isok:true},
-          {title:'客户年销量',type:'SalesVolume',value:'',store:false},
-          {title:'拜访结果',type:'VisitContent',value:'',store:false,stage:'1',visibleType:'err'},
-          {title:'拜访内容',type:'VisitContent',value:'',store:false,stage:'2',visibleType:'err'},
-          {title:'购买原因',type:'VisitContent',value:'',store:false,stage:'3',visibleType:'err'},
-          {title:'活动内容',type:'VisitContent',value:'',store:false,stage:'4',visibleType:'err'},
-          
-          {title:'是否已付款',type:'IsAlreadyPay',value:'',store:false},
-          {title:'是否团签',type:'IsGroup',value:'',store:false},
-          {title:'客户年销售额(台)',type:'SalesVolume',value:'',store:false},
-          {title:'客户线索销售量',type:'LeadsSales',value:'',store:false},
-          {title:'成交量比例',type:'VolumeRatio',value:'',store:false},
-          {title:'客户建议',type:'CustomerSuggestion',value:'',store:false},
-          {title:'成功分享',type:'SuccessShare',value:'',store:false},
-
-          {title:'谈判计划',type:'NegotiationPlan',value:'',store:false},
-          {title:'发现问题',type:'QuestionContent',value:'',store:false},
+          {title:'经销商级别',type:'DealerLevel',value:'',store:false,activity:'err'},
+          {title:'拜访时间',type:'CreateDate',value:'',store:false,activity:'err'},
+          {title:'定位地址',type:'DetailPlace',value:'',store:false,activity:'err'},
+          {title:'拜访类别',type:'VisitTypeText',value:'',store:false,activity:'err'},
+          {title:'被访人级别',type:'ContactInfoList',value:[],need: '1'},
+          {title:'培训相关信息',type:'TrainingInfoModel',value:[],need: '2'},
+          {title:'活动相关信息',type:'ActivityInfoList',value:'',store:false,activity:'ok'},
+          {title:'客户意向类型',type:'IntentionType',value:'',store:false,activity:'err'},
+          {title:'拒绝原因',type:'IntentionType',value:'',store:false,activity:'err'},
+          {title:'是否知道卡车之家',type:'CommentContent',value:'',store:false,activity:'err',isok:true},
+          {title:'是否合作其他家',type:'OtherCooperation',value:'',store:false,activity:'err',isok:true},
+          {title:'客户年销量',type:'SalesVolume',value:'',store:false,activity:'err'},
+          {title:'拜访结果',type:'VisitContent',value:'',store:false,activity:'err',stage:'1',visibleType:'err'},
+          {title:'拜访内容',type:'VisitContent',value:'',store:false,activity:'err',stage:'2',visibleType:'err'},
+          {title:'购买原因',type:'VisitContent',value:'',store:false,activity:'err',stage:'3',visibleType:'err'},
+          {title:'活动内容',type:'VisitContent',value:'',store:false,activity:'err',stage:'4',visibleType:'err'},
+          {title:'是否已付款',type:'IsAlreadyPay',value:'',store:false,activity:'err'},
+          {title:'是否团签',type:'IsGroup',value:'',store:false,activity:'err'},
+          {title:'客户年销售额(台)',type:'SalesVolume',value:'',store:false,activity:'err'},
+          {title:'客户线索销售量',type:'LeadsSales',value:'',store:false,activity:'err'},
+          {title:'成交量比例',type:'VolumeRatio',value:'',store:false,activity:'err'},
+          {title:'客户建议',type:'CustomerSuggestion',value:'',store:false,activity:'err'},
+          {title:'成功分享',type:'SuccessShare',value:'',store:false,activity:'err'},
+          {title:'谈判计划',type:'NegotiationPlan',value:'',store:false,activity:'err'},
+          {title:'发现问题',type:'QuestionContent',value:'',store:false,activity:'err'},
         ],
         // 
         visibleData:{},
-        CheckInRecord: null
+        CheckInRecord: null,
+        // 判断第几次进来
+        isGoTo:false
       }
     },
     mounted: function(){
@@ -86,6 +93,15 @@
         // 客户拜访数据
         this.visibleDetail()
       })
+
+      // 判断是否为第一次进来
+      getItem('submitok',event=>{
+          if (event.data == 1) {
+            this.isGoTo = false
+          }else{
+            this.isGoTo = true
+          }
+        })
     },
     methods:{
       // 获取拜访详情数据
@@ -104,26 +120,46 @@
             // 循环插入数据
             this.lists.forEach((element,index) => {
               // 将数组拿出来
-              if( element.need === true ){
+              if( element.need ){
 
-                obj[element.type].forEach((e,index) => {
-                  let name = {title: e.Position ,type:'RealName',value: e.RealName }
-                  element.value.push(name)
-                  if(e.Telephone){
-                    let tel =  {title: e.Position+'联系方式',type:'Telephone',value: e.Telephone }
-                    element.value.push(tel)
+                if (element.need === '1') {
+                  // 联系人
+                    obj[element.type].forEach((e,index) => {
+                      let name = {title: e.Position ,type:'RealName',value: e.RealName }
+                      element.value.push(name)
+                      if(e.Telephone){
+                        let tel =  {title: e.Position+'联系方式',type:'Telephone',value: e.Telephone }
+                        element.value.push(tel)
+                      }
+                    })
+
+                }else{
+                  // 培训
+                  var arr = ['培训内容','培训原因','被培训人姓名','被培训人职务']
+                  var typeArr = obj[element.type]
+                  var indexArr = 0
+                  for (const key in typeArr) {
+                    let name = {title: arr[indexArr] ,type: key,value: typeArr[key] }
+                    element.value.push(name)
+                    indexArr++
                   }
-                  
-                })
+                }
+                
 
               }else if(element.store === true){
                 // 拜访店铺
                 obj[element.type].forEach((e,index) => {
                   element.value.push(e.StoreName)
                 })
-              }else{
+              }
+              if(element.activity === 'err'){
                 // 其他
-                element.value = obj[element.type]
+                if(element.type === 'DealerLevel'){
+                  element.value = obj[element.type] == 1 ? '一级' : '二级'
+                }else{
+                  element.value = obj[element.type]
+                }
+
                 if(element.type == 'VisitContent'){
                   switch (obj.VisitType) {
                     case 1:
@@ -153,14 +189,35 @@
                       break;
                   }
                 }
+              }else if(element.activity === 'ok'){ // 活动
+                let arr = obj[element.type]
+                for (const key in arr) {
+                  element.value += arr[key].ActivityTypeText + " "
+                }
               }
             });
+
             // 关闭load
             dingtalk.ready(function(){
               dingtalk.apis.device.notification.hidePreloader()
             })
           }
         )
+      },
+      submit(){
+        if(this.SomeOpen) return;
+        // 加载
+        dingtalk.ready(function(){
+          dingtalk.apis.device.notification.showPreloader({
+            text: "前去修改", //loading显示的字符，空表示不显示文字
+            showIcon: true
+          })
+        })
+        this.SomeOpen = true
+        openLink('visible/index',res=>{
+          this.SomeOpen = false
+          closeLink()
+        })
       }
     }
   }
@@ -200,5 +257,24 @@
     color: #5C6066;
     line-height: 22px;
     width: 280px;
+  }
+  .submit{
+    width:400px;
+    height: 50px;
+    background-color: #1571E5;
+    align-items: center;
+    justify-content: center;
+    line-height: 50px;
+    text-align: center;
+    position: fixed;
+    bottom:0;
+    left:0;
+  }
+  .submit-text{
+    color: #fff;
+    font-size: 18px;
+  }
+  .view-box{
+    padding-bottom: 50px;
   }
 </style>

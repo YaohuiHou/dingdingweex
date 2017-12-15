@@ -278,7 +278,7 @@
   </div>
 </template>
 <script>
-  import {toast,getItem,setItem,openLink,visibleAddFun} from '../lib/util.js';
+  import {toast,getItem,setItem,openLink,visibleAddFun,closeLink} from '../lib/util.js';
   import dingtalk from 'dingtalk-javascript-sdk';
   export default {
     data(){
@@ -349,7 +349,10 @@
         let data = JSON.parse(event.data)
         if (data !== undefined) {
           this.visibleData = data
-          this.visibleData.ContactInfoList = []
+          // 活动不加联系人
+          if(this.visibleTypeChange != 6){
+            this.visibleData.ContactInfoList = []
+          }
         }
       })
       getItem('StoreInfo',event=>{
@@ -415,7 +418,7 @@
                     'ActivityType' : element.value,
                     'ActivityTypeText' : element.name
                   }
-                  this.visibleData.ActivityInfoModel[num] = obj
+                  this.visibleData.ActivityInfoList[num] = obj
                   num++
                 }
               });
@@ -467,7 +470,7 @@
                 break;
               case 6:
                 // 活动
-                this.visibleData.ActivityInfoModel = []
+                this.visibleData.ActivityInfoList = []
                 break;
               case 7:
                 // 培训
@@ -588,6 +591,17 @@
 
         // 可以保存 ？
         if(this.isCanSubmit){
+          // 成功设置详情页是否有修改按钮
+          setItem('submitok','1')
+          // 加载
+          dingtalk.ready(function(){
+            dingtalk.apis.device.notification.showPreloader({
+              text: "努力提交中..", //loading显示的字符，空表示不显示文字
+              showIcon: true
+            })
+          })
+          if(this.submitBtn) return;
+          this.submitBtn = true
           // 提交
           visibleAddFun(
               JSON.stringify({
@@ -595,7 +609,19 @@
                  }) 
             ,res=>{
               var obj = JSON.parse(res.data) 
-              toast(res)
+              // 关闭load
+              dingtalk.ready(function(){
+                dingtalk.apis.device.notification.hidePreloader()
+              })
+              if(obj.Body){
+                toast('提交成功！')
+                openLink('detail/index',res=>{
+                  this.submitBtn = false
+                })
+              }else{
+                this.submitBtn = false
+                toast('参数错误')
+              }
             })
         }
       },

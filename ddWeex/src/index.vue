@@ -92,9 +92,9 @@
         // JsApi()
         // 获取cofig
         const dd = dingtalk.apis;
-        jsapifun((res) => {
+        jsapifun(weex.config.bundleUrl ,(res) => {
           me.list = JSON.parse(res.data)
-          me.newTimer = me.list.Head.RspTime
+          me.newTimer = me.list.Body.TimeStamp * 1000
           dingtalk.config({
             agentId: me.list.Body.AgentId, // 必填，微应用ID
             corpId: me.list.Body.CorpId,//必填，企业ID
@@ -110,7 +110,8 @@
               "biz.map.search",
               "biz.util.openLink",
               "biz.util.open",
-              "biz.map.locate"
+              "biz.map.locate",
+              'device.geolocation.get',
             ] // 必填，需要使用的jsapi列表，注意：不要带dd。
           });
           // 获取requestAuthCode
@@ -129,6 +130,7 @@
                 },
                 onFail : function(err) {}
             })
+
             // 获取code
             dd.runtime.permission.requestAuthCode({
               corpId: me.list.Body.CorpId,
@@ -150,7 +152,6 @@
               }
             })
           })
-
         })
       },
       mounted: function(){

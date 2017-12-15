@@ -72,7 +72,7 @@
         this.$set(this.lists[index],'selectedClass',true)
 
         // 储存选择
-        setItem('visibleType',this.lists[index],event=>{
+        setItem('visibleType',JSON.stringify(this.lists[index]),event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false
@@ -100,7 +100,7 @@
           value: 100,
           selectedClass: true
         }
-        setItem('visibleType',type,event=>{
+        setItem('visibleType',JSON.stringify(type),event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false

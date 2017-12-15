@@ -66,7 +66,7 @@
         this.$set(this.lists[index],'selectedClass',true)
 
         // 储存选择
-        setItem('TrainingContent',this.lists[index],event=>{
+        setItem('TrainingContent',JSON.stringify(this.lists[index]),event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false
@@ -94,7 +94,7 @@
           value: 100,
           selectedClass: true
         }
-        setItem('TrainingContent',type,event=>{
+        setItem('TrainingContent',JSON.stringify(type),event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false

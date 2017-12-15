@@ -68,7 +68,7 @@
         this.nextIndex = n
         this.changeBox = !this.changeBox
         // this.$emit('changeValue',n++)
-        this.visibleData.DealerLevel = n++
+        this.visibleData.DealerLevel = n+1
         setItem('visibleData',JSON.stringify(this.visibleData))
       },
       // 页面跳转
@@ -162,14 +162,14 @@
     font-size: 16px;
     margin-left: 12px;
     margin-right: 16px;
-    width: 48px;
+    width: 54px;
   }
   .ok-text{
     color:#80C220;
     font-size: 16px;
     margin-left: 12px;
     margin-right: 16px;
-    width: 48px;
+    width: 54px;
   }
   .reason{
     align-items: flex-start;

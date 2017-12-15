@@ -68,7 +68,7 @@
         //   setItem('visibleData',JSON.stringify(data))
         // })
         // 储存选择
-        setItem('StoreInfo',this.lists[index],event=>{
+        setItem('StoreInfo',JSON.stringify(this.lists[index]),event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false

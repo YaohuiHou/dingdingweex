@@ -32,7 +32,7 @@
   </div>
 </template>
 <script>
-  import {toast,getItem,setItem,jsapifun,openLink,getCheckin} from '../lib/util.js';
+  import {toast,getItem,setItem,jsapifun,openLink,getCheckin,closeLink,setUdlocation} from '../lib/util.js';
   import dingtalk from 'dingtalk-javascript-sdk';
   import headerView from './head.vue';
   import otherView from './other.vue';
@@ -63,13 +63,17 @@
         matchText: '未匹配',
         // 是否合作
         IsCooperation: null,
-        timer:null
+        timer:null,
+        DingTalkUserId:null
       }
     },
     created(){
       // 获取签到信息
+      var me = this
       getItem('CheckInRecord',event=>{
         this.$set(this,'CheckInRecord',JSON.parse(event.data))
+        // 钉钉员工id
+        this.DingTalkUserId = this.CheckInRecord.DingTalkUserId
         // 客户拜访存储数据
         this.visibleData = {
           //签到记录ID
@@ -85,9 +89,8 @@
       })
       // 授权
       const dd = dingtalk.apis;
-      jsapifun((res) => {
+      jsapifun(weex.config.bundleUrl,(res) => {
         me.list = JSON.parse(res.data)
-        me.newTimer = me.list.Head.RspTime
         dingtalk.config({
           agentId: me.list.Body.AgentId, // 必填，微应用ID
           corpId: me.list.Body.CorpId,//必填，企业ID
@@ -96,7 +99,8 @@
           signature: me.list.Body.Signature, // 必填，签名
           type:0,   //选填。0表示微应用的jsapi,1表示服务窗的jsapi。不填默认为0。该参数从dingtalk.js的0.8.3版本开始支持
           jsApiList : [ 
-            "biz.map.locate"
+            "biz.map.locate",
+            'device.geolocation.get'
           ] // 必填，需要使用的jsapi列表，注意：不要带dd。
         });
       })
@@ -106,13 +110,13 @@
 
     },
     mounted: function(){
+      var me = this
       dingtalk.ready(function(){
         const dd = dingtalk.apis;
         // title
         dd.biz.navigation.setTitle({
             title: '拜访记录'
         });
-        // });
       })
     },
     watch:{
@@ -127,7 +131,6 @@
             }
           }) 
           ,res=>{
-            toast('ok')
             var obj = JSON.parse(res.data) 
             this.golocation = !obj.Body
             this.visibleData.IsEffective = 0
@@ -142,8 +145,7 @@
     methods:{
       // 实时刷新数据
       realTime(){
-        this.timer && clearInterval(this.timer)
-        this.timer = setInterval(()=>{
+        setInterval(()=>{
           // 经销商信息
           getItem('DealerDetail',event=>{
             let data = JSON.parse(event.data)
@@ -209,16 +211,45 @@
       // 调取地图
       tomap(){
         var me = this
+        dingtalk.error(function(error) {
+          toast(JSON.stringify(error))
+        })
         dingtalk.ready(function(){
           const dd = dingtalk.apis
           dd.biz.map.locate({
             latitude: me.CheckInRecord.Latitude, // 纬度
             longitude: me.CheckInRecord.Longitude, // 经度
             onSuccess: function (result) {
-              toast(poi)
+              // 重新定位
+              setUdlocation(
+                JSON.stringify({
+                  "Body": {
+                    "DingTalkUserId": me.DingTalkUserId,
+                    "DealerId": me.visibleData.DealerId,
+                    "StoreId": me.visibleData.StoreIdList[0],
+                    "Longitude": result.longitude,
+                    "Latitude": result.latitude,
+                    "Address": result.snippet
+                  }
+                }),
+                res=>{
+                  var obj = JSON.parse(res.data) 
+                  // 隐藏 重新定位
+                  if(obj.Body){
+                    me.golocation = false
+
+                    me.matchText = '已匹配'
+                    me.visibleData.IsEffective = 1
+
+                    setItem('visibleData',JSON.stringify(this.visibleData))
+                  }else{
+                    toast('定位失败，重新定位')
+                  }
+                }
+              )
             },
             onFail: function (err) {
-              toast(err)
+
             }
           });
         })
@@ -242,17 +273,19 @@
           return;
         }
         // 跳转
-        this.timer && clearInterval(this.timer)
-        this.gotolink(type,1)
+        // dingtalk.ready(function(){
+        //   dingtalk.apis.device.notification.showPreloader({
+        //     text: "马上打开下一步", //loading显示的字符，空表示不显示文字
+        //     showIcon: true
+        //   })
+        // })
+        this.gotolink(type)
       },
       // 无效地址原因输入
       inputValue(val){
         this.visibleData.InvalidReason = val
       },
-      gotolink(type,n){
-        if(!n){
-          this.realTime()
-        }
+      gotolink(type){
         // 页面跳转
         if(this.SomeOpen) return;
         this.SomeOpen = true

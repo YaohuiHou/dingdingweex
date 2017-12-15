@@ -109,7 +109,7 @@
         //   selectedClass: true
         // }
         // this.lists.push(type)
-        setItem('visibleLevel',this.lists,event=>{
+        setItem('visibleLevel',JSON.stringify(this.lists),event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false
@@ -119,7 +119,7 @@
         if(this.SomeOpen) return;
         this.SomeOpen = true
         // 储存选择
-        setItem('visibleLevel',this.lists,event=>{
+        setItem('visibleLevel',JSON.stringify(this.lists),event=>{
           // 返回上一页
           goBackLink()
           this.SomeOpen = false
