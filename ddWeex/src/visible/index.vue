@@ -23,6 +23,7 @@
         :visibleType="visibleType"
         :visibleTimer="visibleTimer"
         :visibleLevel="visibleLevel"
+        @timerFun="timerFun"
       ></otherView>
       <!-- 下一步 -->
       <div class="next" @click="nextBtn('register/index')">
@@ -143,9 +144,13 @@
       }
     },
     methods:{
+      timerFun(){
+        // 实时获取缓存数据
+        this.realTime()
+      },
       // 实时刷新数据
       realTime(){
-        setInterval(()=>{
+        this.timer = setInterval(()=>{
           // 经销商信息
           getItem('DealerDetail',event=>{
             let data = JSON.parse(event.data)
@@ -289,6 +294,7 @@
         // 页面跳转
         if(this.SomeOpen) return;
         this.SomeOpen = true
+        clearTimeout(this.timer)
         openLink(type,res=>{
           this.SomeOpen = false
         })

@@ -48,6 +48,7 @@
     methods:{
       gotoLink(view){
         // 到指定页面
+        this.$emit('timerFun',1)
         if(view === 'visible/type' && this.IsCooperation ){
           openLink('visible/type-ok')
         }else{

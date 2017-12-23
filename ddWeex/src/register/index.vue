@@ -593,13 +593,6 @@
         if(this.isCanSubmit){
           // 成功设置详情页是否有修改按钮
           setItem('submitok','1')
-          // 加载
-          dingtalk.ready(function(){
-            dingtalk.apis.device.notification.showPreloader({
-              text: "努力提交中..", //loading显示的字符，空表示不显示文字
-              showIcon: true
-            })
-          })
           if(this.submitBtn) return;
           this.submitBtn = true
           // 提交
@@ -608,11 +601,7 @@
                  "Body": this.visibleData
                  }) 
             ,res=>{
-              var obj = JSON.parse(res.data) 
-              // 关闭load
-              dingtalk.ready(function(){
-                dingtalk.apis.device.notification.hidePreloader()
-              })
+              var obj = JSON.parse(res.data)
               if(obj.Body){
                 toast('提交成功！')
                 openLink('detail/index',res=>{
@@ -620,7 +609,7 @@
                 })
               }else{
                 this.submitBtn = false
-                toast('参数错误')
+                toast('请填写所有必填项')
               }
             })
         }
@@ -678,7 +667,7 @@
       // 签单回访 | 已签单、新人首次拜访
       returnVisit(){
         if((this.visibleData.LeadsSales && this.visibleData.LeadsSales.trim() == '') || !this.visibleData.LeadsSales){
-          toast('从合作开始到回访时间内的销量',5)
+          toast('请输入线索销量',5)
           return;
         }else if( ( this.visibleData.VolumeRatio && this.visibleData.VolumeRatio.trim() == '') || !this.visibleData.VolumeRatio){
           toast('请输入百分比',5)

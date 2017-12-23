@@ -1,21 +1,26 @@
 <template>
   <div class="header">
     <div class="nav">
+      <div class="time-icon-left" @click="monthFun(-1)">
+        <image src="http://s.kcimg.cn/dingtalk/image/time.png" style="width:12px;height:6px;"></image>          
+      </div>
       <div class="time" @click="ddTimeBox">
         <!-- {{date.split(' ')[0]}} -->
         <text class="time-text">{{ newTimer }}</text>
-        <div class="time-icon">
-          <image src="http://s.kcimg.cn/dingtalk/image/time.png" style="width:12px;height:6px;"></image>          
-        </div>
+      </div>
+      <div class="time-icon-right" @click="monthFun(1)">
+        <image src="http://s.kcimg.cn/dingtalk/image/time.png" style="width:12px;height:6px;"></image>          
+      </div>
+    </div>
+    <div class="sign">
+      <div class="sign-text">
+        <text class="text">本月签到{{ dayCount }}次</text>
+        <text class="text">本日签到{{ monthCount }}次</text>
       </div>
       <div class="link" @click="gotoLink('dealer/index')">
         <text class="link-text">经销商拜访记录</text>
         <div class="link-icon"></div>
       </div>
-    </div>
-    <div class="sign">
-      <text class="text">本月签到{{ dayCount }}次</text>
-      <text class="text">本日签到{{ monthCount }}次</text>
     </div>
   </div>
 </template>
@@ -30,7 +35,6 @@
       }
     },
     created(){
-
     },
     methods:{
       // 调取钉钉时间
@@ -42,11 +46,12 @@
             value: this.newTimer, //默认显示日期
             onSuccess : (result)=> {
                 this.newTimer = result.value
-
+                
                 // 传值
                 this.$emit('ddTimeSet',{
                   time:this.newTimer,
-                  page:1
+                  page:1,
+                  month:false
                 })
             },
             onFail : (err)=> {}
@@ -59,6 +64,27 @@
         this.SomeOpen = true
         openLink(go,res=>{
           this.SomeOpen = false
+        })
+      },
+      // 筛选整月数据
+      monthFun(n){
+        // 当前时间
+        let now = new Date()
+        let monthNum = now.getMonth()+1
+
+        // 搜索时间
+        let sMonth = this.newTimer.substr(5,2)
+        let sYear = this.newTimer.substr(0,4)
+        sMonth = parseInt(sMonth) + n
+        sMonth = (sMonth<10?"0":"") + sMonth
+
+        if(sMonth > monthNum) return;
+
+        // 传值
+        this.$emit('ddTimeSet',{
+          time: sYear+'-'+sMonth+'-01',
+          page:1,
+          month: true
         })
       }
     }
@@ -81,10 +107,11 @@
     height: 60px;
     flex-direction: row;
     align-content: center;
-    justify-content: space-between;
+    justify-content: center;
   }
   .time{
     padding-left: 14px;
+    padding-right: 14px;
     height: 30px;
     line-height: 30px;
     align-content: center;
@@ -98,18 +125,27 @@
     border-bottom-right-radius :15px;
     border-top-left-radius :15px;
     border-top-right-radius :15px;
+    margin-right: 15px;
+    margin-left: 15px;
   }
   .time-text{
     line-height: 30px;
     color: #17181A;
     font-size: 16px;
   }
-  .time-icon{
-    width: 12px;
-    height: 6px;
+  .time-icon-left,.time-icon-right{
+    width: 32px;
+    height: 32px;
     padding-right: 14px;
     padding-left: 14px;
     align-items: center;
+    line-height: 32px;
+  }
+  .time-icon-left{
+    transform: rotate(90deg)
+  }
+  .time-icon-right{
+    transform: rotate(-90deg)
   }
   .link{
     align-items: center;
@@ -133,9 +169,13 @@
   }
   .sign{
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: space-between;
     height: 14px;
     padding-left: 16px;
+    padding-right: 12px;
+  }
+  .sign-text{
+    flex-direction: row;
   }
   .text{
     font-size: 12px;

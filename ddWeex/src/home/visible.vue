@@ -1,19 +1,23 @@
 <template>
   <div class="visible">
-    <div class="head" v-if="index == 0 && !month">
-      <text class="day">{{ dayNum }}</text>
-      <text class="month">/{{ monthNum }}月</text>
+    <div class="head" v-if="list.CheckInDate">
+      <text class="day">{{ list.CheckInDate.substr(0,2) }}</text>
+      <text class="month">{{ list.CheckInDate.substr(2,6) }}</text>
       <div class="link"></div>
     </div>
-    <div class="sign" @click="gotoLink(list)">
-      <text class="time">{{timer}}</text>
+    <div class="sign" @click="gotoLink(item)" v-for="item in list.CheckInRecordDataList">
+      <!-- <div class="time">
+        <text class="day-text">{{dayNum}}日/</text>
+        <text class="time-text">{{timer}}</text>
+      </div> -->
+      <text class="time">{{ timerGet( item.CheckinTimestamp ) }}</text>
       <div class="zone">
-        <text class="place">{{list.Place}}</text>
-        <text class="detail-place">{{list.DetailPlace}}</text>
+        <text class="place">{{item.Place}}</text>
+        <text class="detail-place">{{item.DetailPlace}}</text>
       </div>
       <div class="type">
         <!-- 三种状态 未匹配：no-mate ； 未拜访：need-mate ； 已完成：mate -->
-        <text :class="[styleType[list.VisitStatus]]">{{mate[list.VisitStatus]}}</text>
+        <text :class="[styleType[item.VisitStatus]]">{{mate[item.VisitStatus]}}</text>
         <div class="mate-icon"></div>
       </div>
     </div>
@@ -33,16 +37,21 @@
       }
     },
     created(){
-      // 时间换算
-      var now = new Date(this.list.CheckinTimestamp*1000)
-      this.monthNum = ((now.getMonth()+1)<10?"0":"")+(now.getMonth()+1)
-      this.dayNum = (now.getDate()<10?"0":"")+now.getDate();
-      var hours = (now.getHours()<10?"0":"") + now.getHours();                              // 小时
-      var minutes = (now.getMinutes()<10?"0":"") + now.getMinutes();              // 分钟
-      this.timer = hours +":"+ minutes
+     
       // toast(this.list.CheckinTime)
+      this.timerGet(this.list.CheckinTimestamp)
     },
     methods:{
+      timerGet(time){
+         // 时间换算
+        var now = new Date(time)
+        this.monthNum = ((now.getMonth()+1)<10?"0":"")+(now.getMonth()+1)
+        this.dayNum = (now.getDate()<10?"0":"")+now.getDate();
+        var hours = (now.getHours()<10?"0":"") + now.getHours();                              // 小时
+        var minutes = (now.getMinutes()<10?"0":"") + now.getMinutes();              // 分钟
+        let timer = hours +":"+ minutes
+        return timer
+      },
       // 页面跳转
       gotoLink(obj){
         if(this.SomeOpen) return;
@@ -58,10 +67,12 @@
         removeItem('visibleActivity')
         removeItem('TrainingReason')
         removeItem('TrainingContent')
+        removeItem('submitok')
+        toast()
         // 存储签到记录
-        setItem('CheckInRecord',JSON.stringify(this.list),event=>{
+        setItem('CheckInRecord',JSON.stringify(obj),event=>{
           // 成功之后跳转页面
-          if(this.list.VisitStatus === 1){  // 未拜访
+          if(obj.VisitStatus === 1){  // 未拜访
             openLink('visible/index',res=>{
               this.SomeOpen = false
             })
@@ -106,8 +117,8 @@
   }
   .month{
     color: #17181A;
-    line-height: 24px;
     font-size: 16px;
+    font-weight: 400;
   }
   .sign{
     height: 72px;
@@ -117,7 +128,7 @@
     align-items: center;
     border-bottom-width: 1px;
     border-bottom-style: solid;
-    border-bottom-color: rgba(23,24,26,0.08);;
+    border-bottom-color: rgba(23,24,26,0.08);
   }
   .time{
     color: #17181A;

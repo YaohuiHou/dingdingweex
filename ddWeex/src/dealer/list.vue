@@ -1,31 +1,60 @@
 <template>
   <div class="man-list">
-    <div class="item">
+    <div class="item" v-for="(item,index) in DealerSubJsonList">
       <div class="vicible">
-        <text class="name">哈哈哈</text>
-        <text class="type">新人签到</text>
+        <text class="name">{{item.CheckUserName}}</text>
+        <text class="type">{{item.VisitTypeText}}</text>
       </div>
-      <div class="right">
-        <text class="time">2017-12-03 12：00</text>
+      <div class="right" @click="gotoLink('detail/index',index)">
+        <text class="time">{{item.CreateDate}}</text>
         <div class="icon"></div>
       </div>
     </div>
   </div>
 </template>
 <script>
-  import {openLink} from '../lib/util.js';
+  import dingtalk from 'dingtalk-javascript-sdk';
+  import {openLink,setItem,toast} from '../lib/util.js';
   export default {
+    props:['DealerSubJsonList'],
     data(){
       return {
+
       }
     },
+    created(){
+    },
     methods:{
-      gotoLink(type){
+      gotoLink(type,index){
         // 跳到搜索页
         if(this.SomeOpen) return;
         this.SomeOpen = true
-        openLink(type,res=>{
-          this.SomeOpen = false
+
+        // 加载
+        dingtalk.ready(function(){
+          const dd = dingtalk.apis;
+          dd.device.notification.showPreloader({
+              text: "使劲加载中..", //loading显示的字符，空表示不显示文字
+              showIcon: true, //是否显示icon，默认true
+              onSuccess : function(result) {
+                  /*{}*/
+              },
+              onFail : function(err) {}
+          })
+        })
+        
+       
+        // 成功设置详情页是否有修改按钮
+        setItem('submitok','1',res=>{
+          setItem('CheckInRecord',JSON.stringify(this.DealerSubJsonList[index]),event=>{
+            // 关闭load
+            dingtalk.ready(function(){
+              dingtalk.apis.device.notification.hidePreloader()
+            })
+            openLink(type,res=>{
+              this.SomeOpen = false
+            })
+          })
         })
       }
     }

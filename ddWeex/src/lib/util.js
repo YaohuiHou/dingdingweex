@@ -6,12 +6,20 @@ const stream = weex.requireModule('stream');
 const modal = weex.requireModule('modal');
 const storage = weex.requireModule('storage')
 
+// 测试
 const gateway = "http://192.168.2.11:8003/";
 const appid = "bs_q44d44gaooqpawi1p9q0";
 const secretkey = "84e0bbaf769da44510a92505e5cea5c0";
 
 // 打开的链接地址
-const openUrl = "http://192.168.250.168:8083/dist/"
+const openUrl = "http://192.168.1.229:8083/dist/"
+
+// 正式地址
+// const gateway = "https://crm-api.360che.com/";
+// const appid = "bs_800f0pvf7wwnccft7jei";
+// const secretkey = "8821105875dd2199970820d87cf5ee0d";
+
+// const openUrl = "https://s.kcimg.cn/dingtalk/js/"
 
 // 配置 viewport 的宽度为 400px
 meta && meta.setViewport({
@@ -64,9 +72,33 @@ export function getUserId(code, callback) {
   }, callback)
 }
 
+// 首页展示
+export function getCheckinList(data, callback) {
+  var url = getNeedUrl("checkin/list");
+  var sign = getNeedUrlsign(url);
+
+  stream.fetch({
+    method: 'POST',
+    body: data,
+    url: url + '&Signature=' + sign
+  }, callback)
+}
+
 // 获取用户拜访记录
 export function getVisitList(data, callback) {
   var url = getNeedUrl("checkin/getlist");
+  var sign = getNeedUrlsign(url);
+
+  stream.fetch({
+    method: 'POST',
+    body: data,
+    url: url + '&Signature=' + sign
+  }, callback)
+}
+
+// 获取经销商拜访记录列表
+export function dealerVisitList(data, callback) {
+  var url = getNeedUrl("visit/getlist");
   var sign = getNeedUrlsign(url);
 
   stream.fetch({

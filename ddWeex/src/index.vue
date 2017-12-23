@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-     <list>
+     <list @loadmore="fetch" loadmoreoffset="10">
       <header>
         <!-- 头 -->
         <headerView 
@@ -16,7 +16,7 @@
         </div>
       </header>
 
-      <cell v-for="(item,index) in CheckInRecordList" v-bind:key="item.Id">
+      <cell v-for="(item,index) in CheckInDateList" v-bind:key="item.Id">
           <!-- 签到列表 -->
           <visibleView 
             :list="item"
@@ -33,7 +33,7 @@
   var modal = weex.requireModule('modal');
 
   import dingtalk from 'dingtalk-javascript-sdk';
-  import {jsapifun,toast,getUserId,getVisitList,setItem} from './lib/util.js';
+  import {jsapifun,toast,getUserId,getVisitList,setItem,getCheckinList} from './lib/util.js';
   import headerView from './home/head.vue';
   import visibleView from './home/visible.vue';
   
@@ -56,34 +56,36 @@
               page:1,
               // 是否展示全月
               month:true,
-              MonthCheckInCount: 1,
+              MonthCheckInCount: 0,
               DayCheckInCount: 0,
-              CheckInRecordList: [],
+              CheckInDateList: [],
               // 拜访列表
               visibleList:{
-                "MonthCheckInCount": 1,
+                "MonthCheckInCount": 0,
                 "DayCheckInCount": 0,
-                "CheckInRecordList": [
-                  {
-                    "Id": 1,// 签到编号ID
-                    "CheckinTimestamp": 2,//签到时间(毫秒)
-                    "CheckinTime": "2017-11-27",//签到时间
-                    "DingTalkUserId": "sample string 4",//员工在企业内的UserID(钉钉)
-                    "Place": "sample string 5",//签到地址
-                    "DetailPlace": "sample string 6",//签到详细地址
-                    "ImageList": [//签到照片url列表
-                      "sample string 1",
-                      "sample string 2"
-                    ],
-                    "Remark": "sample string 7",//签到备注
-                    "VisitStatus": 8,//拜访状态（1：未拜访，2：未匹配，3：已完成）
-                    "UserId": 9,//系统用户ID
-                    "UserName": "sample string 10",//系统用户名称
-                    "Latitude": 11.0,//签到位置纬度
-                    "Longitude": 12.0//签到位置经度
-                  }
+                "CheckInDateList": [
+                  // {
+                  //   "Id": 1,// 签到编号ID
+                  //   "CheckinTimestamp": 2,//签到时间(毫秒)
+                  //   "CheckinTime": "2017-11-27",//签到时间
+                  //   "DingTalkUserId": "sample string 4",//员工在企业内的UserID(钉钉)
+                  //   "Place": "sample string 5",//签到地址
+                  //   "DetailPlace": "sample string 6",//签到详细地址
+                  //   "ImageList": [//签到照片url列表
+                  //     "sample string 1",
+                  //     "sample string 2"
+                  //   ],
+                  //   "Remark": "sample string 7",//签到备注
+                  //   "VisitStatus": 8,//拜访状态（1：未拜访，2：未匹配，3：已完成）
+                  //   "UserId": 9,//系统用户ID
+                  //   "UserName": "sample string 10",//系统用户名称
+                  //   "Latitude": 11.0,//签到位置纬度
+                  //   "Longitude": 12.0//签到位置经度
+                  // }
                 ]
-              }
+              },
+              // 总页数
+              PageCount:0
           }
       },
       created (){
@@ -130,7 +132,6 @@
                 },
                 onFail : function(err) {}
             })
-
             // 获取code
             dd.runtime.permission.requestAuthCode({
               corpId: me.list.Body.CorpId,
@@ -148,7 +149,7 @@
                 })
               },
               onFail : function(err) {
-                toast(err)
+                // toast(err)
               }
             })
           })
@@ -175,16 +176,13 @@
             var now = new Date(time);
             var timeDate = this.newTimer = now.getFullYear()+"-"+((now.getMonth()+1)<10?"0":"")+(now.getMonth()+1)+"-"+(now.getDate()<10?"0":"")+now.getDate();
             
-            // 展示本月时间
-            this.month = month
-
             // ajax
-            getVisitList(
+            getCheckinList(
               JSON.stringify({
                  "Body": { 
                    "DingTalkUserId": this.DingTalkUserIds,
                    "SpecDate" : timeDate,
-                   "IsGetMonth": month
+                   "IsGetMonth": this.month
                    },
                    "Paged": {
                       "PageIndex": page,
@@ -192,36 +190,76 @@
                     }
                  }) 
             ,res=>{
-              var obj = JSON.parse(res.data) 
-
-              // this.$set(this,'visibleList',obj.Body)
-              this.visibleList = obj.Body
-              this.MonthCheckInCount = obj.Body.MonthCheckInCount
-              this.DayCheckInCount = obj.Body.DayCheckInCount
-              this.CheckInRecordList = obj.Body.CheckInRecordList
-              if(!this.CheckInRecordList.length){
-                this.nothing = true
-              }else{
-                this.nothing = false
-              }
               // 关闭load
               dingtalk.ready(function(){
                 dingtalk.apis.device.notification.hidePreloader()
               })
+              
+              var obj = JSON.parse(res.data)
+              
+              // 合并数组
+              if(this.page == 1){
+                this.CheckInDateList = obj.Body.CheckInDateList
+              }else{
+                let array = obj.Body.CheckInDateList
+                // 获取最后一个数组
+                let lastArr = this.CheckInDateList[this.CheckInDateList.length-1]
+                
+                for (let i = 0; i < array.length; i++) {
+                  const element = array[i];
+                  if(lastArr.CheckInDate == element.CheckInDate){
+                    element.CheckInRecordDataList.forEach(ele => {
+                      lastArr.CheckInRecordDataList.push(ele)
+                    });
+                  }else{
+                    this.CheckInDateList.push(element)
+                  }
+                  
+                }
+                this.CheckInDateList.concat(obj.Body.CheckInDateList);
+              }
+
+              if( !obj.Body.CheckInDateList || obj.Body.CheckInDateList.length<=0){
+                this.nothing = true
+                return;
+              }else{
+                this.nothing = false
+              }
+
+              // 总页数
+              this.PageCount = obj.Paged.PageCount
+              // this.$set(this,'visibleList',obj.Body)
+              this.visibleList = obj.Body
+              this.MonthCheckInCount = obj.Body.MonthCheckInCount
+              this.DayCheckInCount = obj.Body.DayCheckInCount
+              
+               
+              this.page += 1
+
             })
           },
           // 钉钉设置时间
           ddTimeSet(obj){
             this.page = obj.page
+            this.month = obj.month
             let o = {
-              month: false,
+              month: this.month,
               page: this.page
             }
             this.getlist(obj.time,o)
+            // 设置为当前时间
+            this.newTimer = obj.time
           },
-          getClick: function(){
-            // 获取
-            
+          // 滚动加载
+          fetch: function(){
+            if(this.PageCount >= this.page){
+              // ajax
+              let o = {
+                month: this.month,
+                page: this.page
+              }
+              this.getlist(this.newTimer,o)
+            }
         }
       }
   }

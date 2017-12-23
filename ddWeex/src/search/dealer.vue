@@ -1,6 +1,6 @@
 <template>
   <div class="search">
-    <list>
+    <list @loadmore="fetch" loadmoreoffset="10">
       <!-- 搜索框 -->
       <header>
         <div class="header-box">
@@ -22,7 +22,7 @@
 </template>
 <script>
   import dingtalk from 'dingtalk-javascript-sdk';
-  import {toast,getDealerList,getItem,setItem,openLink,closeLink} from '../lib/util.js';
+  import {toast,getDealerList,getItem,setItem,removeItem,openLink,closeLink,goBackLink} from '../lib/util.js';
   export default {
     data(){
       return {
@@ -30,7 +30,12 @@
         page:1,
         nextIndex: -1,
         lists:[
-        ]
+        ],
+        PageCount:0,
+        // 输入文案
+        searchValue:'',
+        // 不去搜索店铺
+        dealerSearch:false
       }
     },
     mounted: function(){
@@ -47,13 +52,26 @@
       // 获取uid
       getItem('DingTalkUserId',event=>{
         this.dduserid = event.data
+        // 第一次搜索
+        this.search({value:''})
       })
+
+      // 是否从经销商过来
+      getItem('DealerSearch',event=>{
+        if(event.data == 'ok'){
+          this.dealerSearch = true
+          removeItem('DealerSearch')
+        }
+      })
+      
+      
     },
     methods:{
       // 经销商搜索
       search(event){
         if(!this.dduserid) return;
         // 搜索 ajax
+        this.searchValue = event.value
         getDealerList(
           JSON.stringify({
             "Body": { 
@@ -70,6 +88,8 @@
           ,res=>{
             let obj = JSON.parse(res.data)
             this.lists = obj.Body
+            // 总页数
+            this.PageCount = obj.Paged.PageCount
           }
         )
       },
@@ -91,15 +111,29 @@
         }
         // 储存选择
         setItem('DealerDetail',JSON.stringify(this.lists[index]),event=>{
-          // 关闭当前页面
+          if(this.dealerSearch){
+            // 返回上一页
+            goBackLink()
+          }else{
+            // 关闭当前页面
             closeLink()
-          // 打开当前店铺页
-          openLink('search/shop',res=>{
-            
-            this.SomeOpen = false
-          })
+            // 打开当前店铺页
+            openLink('search/shop',res=>{
+              
+              this.SomeOpen = false
+            })
+          }
+          
         })
 
+      },
+      // 滚动加载
+      fetch: function(){
+        this.page += 1;
+        if(this.PageCount > this.page){
+          // ajax
+          this.search({value: this.searchValue})
+        }
       }
     }
   }

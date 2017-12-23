@@ -9,17 +9,17 @@
       </div>
     </div>
     <!-- 店铺 -->
-    <div class="shop item" @click="gotoLink('search/shop')">
+    <!-- <div class="shop item" @click="gotoLink('search/shop')">
       <text class="text-left">店铺</text>
       <div class="right">
         <text :class="[ StoreName === '请选择店铺' ? 'text-right' : 'selected' ]">{{StoreName}}</text>
         <div class="icon"></div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 <script>
-  import {openLink} from '../lib/util.js';
+  import {openLink,setItem,removeItem} from '../lib/util.js';
   export default {
     props:['DealerId','StoreName'],
     data(){
@@ -34,9 +34,19 @@
         // 跳到搜索页
         if(this.SomeOpen) return;
         this.SomeOpen = true
-        openLink(type,res=>{
-          this.SomeOpen = false
+
+        removeItem('submitok')
+        removeItem('DealerDetail',res=>{
+          // 储存选择
+          setItem('DealerSearch','ok',event=>{
+
+            this.$emit('dealerFun','ok')
+            openLink(type,res=>{
+              this.SomeOpen = false
+            })
+          })
         })
+        
       }
     }
   }
