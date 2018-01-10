@@ -71,15 +71,29 @@
         // 当前时间
         let now = new Date()
         let monthNum = now.getMonth()+1
+        let yearNum = now.getFullYear()
 
         // 搜索时间
         let sMonth = this.newTimer.substr(5,2)
         let sYear = this.newTimer.substr(0,4)
         sMonth = parseInt(sMonth) + n
+        
+        // 小于月份
+        if(sMonth < 1){
+          sMonth = 12
+          sYear = sYear - 1
+        }
+
+        // 大于月份
+        if(sMonth > 12){
+          sMonth = 1
+          sYear = parseInt(sYear) + 1
+        }
+        
+        if(sMonth > monthNum && yearNum < sYear){
+           return
+        }
         sMonth = (sMonth<10?"0":"") + sMonth
-
-        if(sMonth > monthNum) return;
-
         // 传值
         this.$emit('ddTimeSet',{
           time: sYear+'-'+sMonth+'-01',

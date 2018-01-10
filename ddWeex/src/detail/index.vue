@@ -2,7 +2,7 @@
   <div class="view">
     <scroller class="view-box">
       <div class="detail" v-for="item in lists" v-if="item.value.length && (!item.visibleType || (item.visibleType && item.visibleType == 'ok') )">
-        <div class="box" v-if="item.need === '1'" v-for="element in item.value">
+        <div class="box" v-if="item.need" v-for="element in item.value">
           <text class="left-text">{{element.title}}</text>
           <div class="right">
             <text class="right-text" >{{element.value}}</text>
@@ -145,7 +145,7 @@
                   }
                 })
 
-            }else{
+            }else if (element.need === '2'){
               // 培训
               var arr = ['培训内容','培训原因','被培训人姓名','被培训人职务']
               var typeArr = obj[element.type]

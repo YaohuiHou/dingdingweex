@@ -46,8 +46,11 @@
       return {
         // 签到信息
         CheckInRecord:{},
-        latitude: 0, // 纬度
-        longitude: 0, // 经度
+        // 签到经纬度
+        CheckLatitude:0,
+        CheckLongitude:0,
+        Latitude: -1, // 纬度
+        Longitude: -1, // 经度
         list:{},
         // 是否需要定位
         golocation:false,
@@ -57,9 +60,6 @@
         visibleLevel: '请选择被访人级别',
         // 存储所有拜访信息
         visibleData: {},
-        // 门店经纬度
-        Longitude:0,
-        Latitude:0,
         // 是否匹配
         matchText: '未匹配',
         // 是否合作
@@ -72,7 +72,13 @@
       // 获取签到信息
       var me = this
       getItem('CheckInRecord',event=>{
+        // toast(event.data)
+        
         this.$set(this,'CheckInRecord',JSON.parse(event.data))
+        // 签到经纬度
+        this.CheckLatitude = this.CheckInRecord.Latitude
+        this.CheckLongitude = this.CheckInRecord.Longitude
+
         // 钉钉员工id
         this.DingTalkUserId = this.CheckInRecord.DingTalkUserId
         // 客户拜访存储数据
@@ -121,23 +127,28 @@
       })
     },
     watch:{
-      DealerName(){
+      Latitude(){
         getCheckin(
           JSON.stringify({
             "Body": {
               "CheckIn_Latitude": this.CheckInRecord.Latitude,
               "CheckIn_Longitude": this.CheckInRecord.Longitude,
-              "Store_Latitude": this.Longitude,
-              "Store_Longitude": this.Latitude
+              "Store_Latitude": this.Latitude,
+              "Store_Longitude": this.Longitude
             }
           }) 
           ,res=>{
             var obj = JSON.parse(res.data) 
-            this.golocation = !obj.Body
+            // this.golocation = !obj.Body
             this.visibleData.IsEffective = 0
             if(obj.Body){
               this.matchText = '已匹配'
               this.visibleData.IsEffective = 1
+              this.golocation = false
+            }else{
+              this.matchText = '未匹配'
+              this.visibleData.IsEffective = 0
+              this.golocation = true
             }
           }
         )
@@ -150,6 +161,7 @@
       },
       // 实时刷新数据
       realTime(){
+        this.timer && clearInterval(this.timer)
         this.timer = setInterval(()=>{
           // 经销商信息
           getItem('DealerDetail',event=>{
@@ -157,6 +169,7 @@
             if (data !== undefined) {
               // 经销商编号
               this.visibleData.DealerId = data.DealerId
+              // this.DealerName = data.DealerName
               setItem('visibleData',JSON.stringify(this.visibleData))
             }
           })
@@ -164,15 +177,16 @@
           getItem('StoreInfo',event=>{
             let data = JSON.parse(event.data)
             if (data !== undefined) {
-              this.DealerName = data.StoreName
-              this.Longitude = data.Latitude
-              this.Latitude = data.Latitude
+              this.DealerName = data[0].StoreName
+              this.Longitude = data[0].Longitude
+              this.Latitude = data[0].Latitude
               // 是否合作
-              this.IsCooperation = data.IsCooperation
-              
+              this.IsCooperation = data[0].IsCooperation
               // 选择的门店ID集合
               this.visibleData.StoreIdList = []
-              this.visibleData.StoreIdList.push(data.StoreId)
+              data.forEach(ele=>{
+                this.visibleData.StoreIdList.push(ele.StoreId)
+              })
               setItem('visibleData',JSON.stringify(this.visibleData))
             }
           })
@@ -216,14 +230,14 @@
       // 调取地图
       tomap(){
         var me = this
-        dingtalk.error(function(error) {
-          toast(JSON.stringify(error))
-        })
-        dingtalk.ready(function(){
+        // dingtalk.error(function(error) {
+        //   toast(JSON.stringify(error))
+        // })
+        dingtalk.ready(()=>{
           const dd = dingtalk.apis
           dd.biz.map.locate({
-            latitude: me.CheckInRecord.Latitude, // 纬度
-            longitude: me.CheckInRecord.Longitude, // 经度
+            latitude: this.CheckLatitude, // 纬度
+            longitude: this.CheckLongitude, // 经度
             onSuccess: function (result) {
               // 重新定位
               setUdlocation(
@@ -254,7 +268,7 @@
               )
             },
             onFail: function (err) {
-
+              toast(JSON.stringify(err))
             }
           });
         })
@@ -294,7 +308,7 @@
         // 页面跳转
         if(this.SomeOpen) return;
         this.SomeOpen = true
-        clearTimeout(this.timer)
+        this.timer && clearInterval(this.timer)
         openLink(type,res=>{
           this.SomeOpen = false
         })

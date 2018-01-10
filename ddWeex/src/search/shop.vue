@@ -9,6 +9,12 @@
           <!-- :class="item.selected === true ? 'slected' : 'text'" -->
         </div>
       </cell>
+      <cell>
+         <!-- 下一步 -->
+        <div class="next" @click="nextBtn">
+          <text class="next-text">保存</text>
+        </div>
+      </cell>
     </list>
   </div>
 </template>
@@ -47,31 +53,30 @@
     methods:{
       // 选中店铺
       selectedFun(index){
-        if(this.SomeOpen) return;
-          this.SomeOpen = true
-        /*
-        *  判断是否有上一个，有就干掉
-        *  保存index，为下次准备
-        */
-        if(this.nextIndex !== -1){
-          this.$set(this.lists[this.nextIndex],'selected',false)
-        }
         this.nextIndex = index
 
-        if(!this.lists[index].selected){
-          this.$set(this.lists[index],'selected',true)
-        }
-        // // 存储到提交json
-        // getItem('visibleData',event=>{
-        //   let data = JSON.parse(event.data)
-        //   data.StoreIdList = this.lists[index].StoreId
-        //   setItem('visibleData',JSON.stringify(data))
-        // })
+        this.$set(this.lists[index],'selected',!this.lists[index].selected)
+      },
+      // 保存，到下一步
+      nextBtn(){
+        if(this.SomeOpen) return;
+        this.SomeOpen = true
         // 储存选择
-        setItem('StoreInfo',JSON.stringify(this.lists[index]),event=>{
+        let storeArr = []
+        this.lists.forEach(element => {
+          if(element.selected){
+            storeArr.push( element )
+          }
+        });
+        if(storeArr.length <= 0){
+          toast('请选择店铺进行提交')
+          this.SomeOpen = false
+          return
+        }
+        setItem('StoreInfo',JSON.stringify(storeArr),event=>{
+          this.SomeOpen = false
           // 返回上一页
           goBackLink()
-          this.SomeOpen = false
         })
       }
     }
@@ -114,5 +119,24 @@
     margin-left: 3px;
     margin-right: 7px;
     margin-top: 3px;
+  }
+  .next{
+    width: 368px;
+    height: 44px;
+    background-color: #1571E5;
+    align-items: center;
+    justify-content: center;
+    line-height: 44px;
+    text-align: center;
+    border-left-style: 4px;
+    border-top-style: 4px;
+    border-right-style: 4px;
+    border-bottom-style: 4px;
+    margin-left: 16px;
+    margin-top: 50px;
+  }
+  .next-text{
+    color: #fff;
+    font-size: 16px;
   }
 </style>

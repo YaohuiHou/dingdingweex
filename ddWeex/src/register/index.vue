@@ -16,21 +16,21 @@
       <!-- 线索销量 -->
       <div class="item" v-if="visibleTypeChange == 8 || (visibleTypeChange == 2 && IsCooperation)">
         <div class="left">
-          <text class="left-text">线索销量</text>
+          <text class="left-text">线索销量(条)</text>
           <text class="must">*</text>
         </div>
         <div class="right">
-          <input type="text" class="input" @input="inputFun($event,-1,'LeadsSales')" placeholder="从合作开始到回访时间内的销量" />
+          <input type="tel" class="input" @input="inputFun($event,-1,'LeadsSales')" placeholder="从合作开始到回访时间内的销量" />
         </div>
       </div>
       <!-- 成交比例 -->
       <div class="item" v-if="visibleTypeChange == 8 || (visibleTypeChange == 2 && IsCooperation)">
         <div class="left">
-          <text class="left-text">成交比例</text>
+          <text class="left-text">成交比例(%)</text>
           <text class="must">*</text>
         </div>
         <div class="right">
-          <input type="text" class="input" @input="inputFun($event,-1,'VolumeRatio')" placeholder="请输入百分比" />
+          <input type="tel" class="input" @input="inputFun($event,-1,'VolumeRatio')" placeholder="请输入百分比" />
         </div>
       </div>
 
@@ -156,11 +156,11 @@
       <!-- 销量 -->
       <div class="item" v-if="visibleTypeChange == 1">
         <div class="left">
-          <text class="left-text">客户年销量</text>
+          <text class="left-text">客户年销量(台)</text>
           <text class="must">*</text>
         </div>
         <div class="right">
-          <input type="text" @input="inputFun($event,-1,'SalesVolume')" class="input" placeholder="请输入销量" />
+          <input type="tel" @input="inputFun($event,-1,'SalesVolume')" class="input" placeholder="请输入销量" />
         </div>
       </div>
       <!-- 拜访结果 -->
@@ -364,13 +364,6 @@
       // 获取缓存数据
       this.obtainData()
 
-      let timer = setTimeout(() => {
-        // 关闭load
-        dingtalk.ready(function(){
-          dingtalk.apis.device.notification.hidePreloader()
-        });
-        clearTimeout(timer)
-      }, 500);
     },
     mounted: function(){
       dingtalk.ready(function(){
@@ -450,11 +443,16 @@
         getItem('StoreInfo',event=>{
           let data = JSON.parse(event.data)
           if (data !== undefined) {
-            this.$set(this.lists[0],'value',data.StoreName)
+            this.$set(this.lists[0],'value',data[0].StoreName)
           }
         })
         // 类型
         getItem('visibleType',event=>{
+          // 关闭load
+          dingtalk.ready(function(){
+            dingtalk.apis.device.notification.hidePreloader()
+          });
+
           let data = JSON.parse(event.data)
           if (data !== undefined) {
             this.$set(this.lists[1],'value',data.name)
@@ -511,7 +509,6 @@
                 num ++;
               }
             });
-
           }
         })
       },
@@ -587,8 +584,10 @@
           // 签单
             me.successVisit();
             break;
+          case 100:
+            // 其他
+            me.visibleNameFun()
         }
-
         // 可以保存 ？
         if(this.isCanSubmit){
           // 成功设置详情页是否有修改按钮
@@ -609,7 +608,7 @@
                 })
               }else{
                 this.submitBtn = false
-                toast('请填写所有必填项')
+                toast(res.data)
               }
             })
         }

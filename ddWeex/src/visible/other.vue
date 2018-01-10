@@ -47,13 +47,23 @@
     },
     methods:{
       gotoLink(view){
+        if(this.SomeOpen) return;
+        this.SomeOpen = true
         // 到指定页面
         this.$emit('timerFun',1)
         if(view === 'visible/type' && this.IsCooperation ){
-          openLink('visible/type-ok')
+          openLink('visible/type-ok',res=>{
+            this.SomeOpen = false
+          })
         }else{
-          openLink(view)
+          openLink(view,res=>{
+            this.SomeOpen = false
+          })
         }
+        let timer = setTimeout(() => {
+          this.SomeOpen = false
+          clearTimeout(timer)
+        }, 300);
       }
     }
   }

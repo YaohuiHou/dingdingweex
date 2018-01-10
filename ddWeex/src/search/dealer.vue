@@ -68,10 +68,11 @@
     },
     methods:{
       // 经销商搜索
-      search(event){
+      search(event,page){
         if(!this.dduserid) return;
         // 搜索 ajax
         this.searchValue = event.value
+        let pageText = page ? page : 1
         getDealerList(
           JSON.stringify({
             "Body": { 
@@ -81,13 +82,18 @@
               "DealerName" : event.value
               },
               "Paged": {
-                "PageIndex": this.page,
+                "PageIndex": pageText,
                 "PageSize": 20
               }
             }) 
           ,res=>{
+            if(!page){
+              this.lists = []
+            }
             let obj = JSON.parse(res.data)
-            this.lists = obj.Body
+            obj.Body.forEach(ele=>{
+              this.lists.push(ele)
+            })
             // 总页数
             this.PageCount = obj.Paged.PageCount
           }
@@ -132,7 +138,7 @@
         this.page += 1;
         if(this.PageCount > this.page){
           // ajax
-          this.search({value: this.searchValue})
+          this.search({value: this.searchValue},this.page)
         }
       }
     }

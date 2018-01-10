@@ -78,6 +78,11 @@
         openLink(go,res=>{
           this.SomeOpen = false
         })
+        let timer = setTimeout(() => {
+          this.SomeOpen = false
+          clearTimeout(timer)
+        }, 300);
+        
       },
       inputFun(event){
         this.$emit('inputValue',event.value)
